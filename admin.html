@@ -6,66 +6,74 @@
 <title>Editor — Dhanashri Journal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Gaegu:wght@400;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Dancing+Script:wght@400;600;700&family=Gaegu:wght@400;700&family=Indie+Flower&family=Nunito:wght@400;600;700&family=Patrick+Hand&family=Quicksand:wght@400;600;700&family=Shadows+Into+Light&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/style.css">
 <style>
   body{overflow:hidden; height:100vh;}
   .app{display:flex; flex-direction:column; height:100vh;}
-  .topbar{display:flex; align-items:center; gap:10px; padding:12px 18px 8px; flex-wrap:wrap;}
-  .mark{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--rose),var(--tan));
+  .topbar{display:flex; align-items:center; gap:10px; padding:12px 16px 6px; flex-wrap:wrap;}
+  .mark{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--lav),var(--peri));
     display:flex;align-items:center;justify-content:center;color:#fff;font-size:17px;box-shadow:0 4px 12px var(--shadow);flex:none;}
-  .story-title{font-family:var(--hand); font-size:27px; font-weight:700; color:var(--ink); border:none; background:transparent; outline:none; min-width:80px; max-width:38vw; padding:2px 6px; border-radius:8px;}
-  .story-title:focus{background:rgba(255,255,255,.6);}
-  .sdate{font-weight:700; font-size:13px; color:var(--rose-deep); border:none; background:transparent; outline:none;}
+  .story-title{font-family:var(--hand); font-size:27px; font-weight:700; color:var(--ink); border:none; background:transparent; outline:none; min-width:80px; max-width:34vw; padding:2px 6px; border-radius:8px;}
+  .story-title:focus{background:rgba(255,255,255,.65);}
+  .sdate{font-weight:700; font-size:13px; color:var(--lav-deep); border:none; background:transparent; outline:none;}
   .spacer{flex:1;}
-  .actions{display:flex; gap:7px; flex-wrap:wrap;}
-  .cover-row{display:flex; align-items:center; gap:10px; padding:0 18px 6px;}
-  .cover-prev{width:54px;height:42px;border-radius:6px;object-fit:cover;border:1px solid var(--paper-edge);background:var(--cream);display:flex;align-items:center;justify-content:center;color:var(--tan);font-size:20px;}
+  .actions{display:flex; gap:6px; flex-wrap:wrap;}
+  .cover-row{display:flex; align-items:center; gap:10px; padding:0 16px 6px;}
+  .cover-prev{width:54px;height:42px;border-radius:8px;object-fit:cover;border:1px solid var(--paper-edge);background:var(--soft);display:flex;align-items:center;justify-content:center;color:var(--lilac);font-size:20px;overflow:hidden;}
   .cover-row .lbl{font-size:12px;color:var(--ink-soft);}
 
-  .tabs{display:flex; gap:8px; padding:2px 18px 10px; overflow-x:auto; align-items:center;}
+  .tabs{display:flex; gap:8px; padding:2px 16px 8px; overflow-x:auto; align-items:center;}
   .tab{flex:none; cursor:pointer; padding:7px 16px; border-radius:14px; background:#fff; border:1px solid var(--paper-edge);
-    box-shadow:0 2px 6px rgba(91,79,73,.06); font-weight:700; font-size:13px;}
-  .tab.active{background:var(--blush); border-color:var(--rose);}
-  .tab.add{font-size:18px; color:var(--rose-deep); border:2px dashed var(--tan); background:transparent;}
-  .tab .x{color:var(--rose-deep); margin-left:8px; opacity:.6;}
+    box-shadow:0 2px 6px rgba(75,67,97,.06); font-weight:700; font-size:13px;}
+  .tab.active{background:var(--blush); border-color:var(--lav);}
+  .tab.add{font-size:18px; color:var(--lav-deep); border:2px dashed var(--lilac); background:transparent;}
+  .tab .x{color:var(--lav-deep); margin-left:8px; opacity:.6;}
+  .hint{font-size:11px; color:var(--ink-soft); text-align:center; padding:0 16px 4px;}
+
+  /* format bar */
+  .fmtbar{display:none; align-items:center; gap:6px; padding:8px 12px; margin:0 12px 6px; background:#fff;
+    border:1px solid var(--paper-edge); border-radius:14px; box-shadow:0 4px 14px var(--shadow); overflow-x:auto;}
+  .fmtbar > *{flex:none;}
+  .fmtbar select{font-family:var(--body); font-size:13px; padding:6px 8px; border:1px solid var(--paper-edge); border-radius:9px; background:var(--soft); color:var(--ink);}
+  .fmtbar .fb{width:34px;height:34px;border:1px solid var(--paper-edge);background:#fff;border-radius:9px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;color:var(--ink);}
+  .fmtbar .fb.active{background:var(--lav-deep);color:#fff;border-color:var(--lav-deep);}
+  .fmtbar .sep{width:1px;height:24px;background:var(--paper-edge);margin:0 2px;}
+  .fmtbar .szval{min-width:28px;text-align:center;font-weight:700;font-size:13px;}
+  .fmtbar .sw{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid #fff;box-shadow:0 0 0 1px var(--paper-edge);}
+  .fmtbar input[type=color]{width:32px;height:32px;border:none;background:none;cursor:pointer;padding:0;border-radius:8px;}
 
   .stage{flex:1; overflow:auto; display:flex; justify-content:center; padding:6px 16px 96px;}
   .stage-inner{margin:auto;}
 
-  /* editing controls */
-  .el.selected{outline:1.5px dashed var(--rose); outline-offset:4px; z-index:50; border-radius:6px;}
+  .el.selected{outline:1.5px dashed var(--lav); outline-offset:4px; z-index:50; border-radius:6px;}
   .el .ctrl{position:absolute; top:-13px; right:-13px; display:none; gap:4px; z-index:60;}
   .el.selected .ctrl{display:flex;}
-  .ctrl .dot{width:24px;height:24px;border-radius:50%; background:#fff; border:1px solid var(--paper-edge);
+  .ctrl .dot{width:25px;height:25px;border-radius:50%; background:#fff; border:1px solid var(--paper-edge);
     display:flex;align-items:center;justify-content:center; cursor:pointer; font-size:13px; color:var(--ink); box-shadow:0 2px 6px var(--shadow);}
-  .ctrl .dot.del{color:#c0817d;}
-  .grip{position:absolute; top:-13px; left:-13px; width:24px;height:24px;border-radius:50%; background:var(--sage); color:#fff;
+  .ctrl .dot.del{color:#c0617d;}
+  .grip{position:absolute; top:-13px; left:-13px; width:25px;height:25px;border-radius:50%; background:var(--lav); color:#fff;
     display:none; align-items:center;justify-content:center; cursor:grab; font-size:12px; box-shadow:0 2px 6px var(--shadow); z-index:60; touch-action:none;}
   .el.selected .grip{display:flex;}
-  .resize{position:absolute; bottom:-11px; right:-11px; width:22px;height:22px;border-radius:50%; background:var(--rose); color:#fff;
+  .resize{position:absolute; bottom:-11px; right:-11px; width:23px;height:23px;border-radius:50%; background:var(--lav-deep); color:#fff;
     display:none; align-items:center;justify-content:center; cursor:nwse-resize; font-size:11px; box-shadow:0 2px 6px var(--shadow); z-index:60; touch-action:none;}
   .el.selected .resize{display:flex;}
   .el-text .text-body:empty:before{content:'Write here...'; color:var(--ink-soft);}
-  .el-photo .cap:empty:before{content:'caption'; color:#cfc6ba;}
-  .text-tools{position:absolute; bottom:-44px; left:0; display:none; gap:6px; background:#fff; padding:6px 8px; border-radius:12px;
-    box-shadow:0 6px 16px var(--shadow); z-index:70; align-items:center; border:1px solid var(--paper-edge);}
-  .el-text.selected .text-tools{display:flex;}
-  .text-tools .sw{width:18px;height:18px;border-radius:50%; cursor:pointer; border:2px solid #fff; box-shadow:0 0 0 1px var(--paper-edge);}
-  .text-tools .tt{cursor:pointer; font-size:13px; padding:2px 7px; border-radius:8px; background:var(--cream); font-weight:700;}
-  .date-stamp input:focus,.page-title:focus{background:rgba(255,255,255,.55); border-radius:6px;}
+  .el-photo .cap:empty:before{content:'caption'; color:#c9c0dc;}
+  .date-stamp .d-text{pointer-events:none;}
+
   .paper-toggle{display:flex; gap:4px; align-items:center;}
   .paper-toggle .pt{width:24px;height:24px;border-radius:7px;cursor:pointer;border:1px solid var(--paper-edge); background:#fff;}
-  .paper-toggle .pt.sel{outline:2px solid var(--rose); outline-offset:1px;}
+  .paper-toggle .pt.sel{outline:2px solid var(--lav); outline-offset:1px;}
 
-  .toolbar{position:fixed; left:50%; bottom:18px; transform:translateX(-50%); display:flex; gap:6px; padding:8px;
+  .toolbar{position:fixed; left:50%; bottom:16px; transform:translateX(-50%); display:flex; gap:6px; padding:8px;
     background:#fff; border-radius:999px; box-shadow:0 12px 32px var(--shadow); border:1px solid var(--paper-edge); z-index:200; max-width:94vw; flex-wrap:wrap; justify-content:center;}
   .tool{border:none; background:transparent; cursor:pointer; font-family:var(--body); font-weight:700; font-size:13px; color:var(--ink);
     padding:9px 14px; border-radius:999px; display:flex; align-items:center; gap:6px;}
-  .tool:hover{background:var(--cream);}
+  .tool:hover{background:var(--soft);}
   .tool .ic{font-size:17px;}
 
-  .mask{position:fixed; inset:0; background:rgba(91,79,73,.32); z-index:300; display:none; align-items:center; justify-content:center; padding:18px;}
+  .mask{position:fixed; inset:0; background:rgba(75,67,97,.34); z-index:300; display:none; align-items:center; justify-content:center; padding:18px;}
   .mask.open{display:flex;}
   .modal{background:var(--paper); width:min(460px,100%); max-height:80vh; overflow:auto; border-radius:18px; padding:22px; box-shadow:0 20px 50px var(--shadow);}
   .modal h3{font-family:var(--hand); font-size:28px; margin:0 0 6px;}
@@ -76,24 +84,25 @@
   .story-list .item{display:flex; align-items:center; gap:10px; padding:8px; border:1px solid var(--paper-edge); border-radius:12px; cursor:pointer; background:#fff;}
   .story-list .item:hover{background:var(--blush);}
   .story-list img{width:46px;height:36px;object-fit:cover;border-radius:6px;}
-  .story-list .ph{width:46px;height:36px;border-radius:6px;background:var(--cream);display:flex;align-items:center;justify-content:center;color:var(--tan);}
+  .story-list .ph{width:46px;height:36px;border-radius:6px;background:var(--soft);display:flex;align-items:center;justify-content:center;color:var(--lilac);}
 
-  .sheet-mask{position:fixed; inset:0; background:rgba(91,79,73,.28); z-index:300; display:none; align-items:flex-end; justify-content:center;}
+  .sheet-mask{position:fixed; inset:0; background:rgba(75,67,97,.3); z-index:300; display:none; align-items:flex-end; justify-content:center;}
   .sheet-mask.open{display:flex;}
-  .sheet{background:var(--paper); width:min(520px,100%); max-height:70vh; border-radius:22px 22px 0 0; padding:18px 18px 26px; overflow:auto;}
+  .sheet{background:var(--paper); width:min(540px,100%); max-height:74vh; border-radius:22px 22px 0 0; padding:18px 18px 26px; overflow:auto;}
   .sheet h3{font-family:var(--hand); font-size:26px; margin:0 0 4px;}
-  .sheet .cat{font-size:12px; font-weight:700; color:var(--rose-deep); letter-spacing:.5px; text-transform:uppercase; margin:14px 0 6px;}
+  .sheet .cat{font-size:12px; font-weight:700; color:var(--lav-deep); letter-spacing:.5px; text-transform:uppercase; margin:14px 0 6px;}
+  .customrow{display:flex; gap:8px; flex-wrap:wrap; align-items:center;}
+  .customrow input[type=text]{flex:1; min-width:150px; padding:9px 12px; border:1px solid var(--paper-edge); border-radius:10px; font-size:15px; outline:none;}
   .stickgrid{display:grid; grid-template-columns:repeat(8,1fr); gap:6px;}
   .stickgrid button{font-size:26px; border:none; background:#fff; border-radius:12px; padding:8px 0; cursor:pointer;}
   .stickgrid button:hover{background:var(--blush); transform:scale(1.12);}
   .washirow{display:flex; gap:8px; flex-wrap:wrap;}
-  .washirow button{width:64px;height:26px;border-radius:3px;border:none;cursor:pointer; box-shadow:0 2px 6px rgba(91,79,73,.12);}
+  .washirow button{width:64px;height:26px;border-radius:3px;border:none;cursor:pointer; box-shadow:0 2px 6px rgba(75,67,97,.12);}
 
-  .toast{position:fixed; left:50%; top:16px; transform:translateX(-50%); background:var(--ink); color:#fff; padding:10px 18px; border-radius:999px;
-    font-size:13px; font-weight:600; z-index:400; box-shadow:0 8px 24px var(--shadow); opacity:0; transition:.25s; pointer-events:none;}
+  .toast{position:fixed; left:50%; top:14px; transform:translateX(-50%); background:var(--ink); color:#fff; padding:10px 18px; border-radius:999px;
+    font-size:13px; font-weight:600; z-index:400; box-shadow:0 8px 24px var(--shadow); opacity:0; transition:.25s; pointer-events:none; max-width:90vw; text-align:center;}
   .toast.show{opacity:1;}
-  .hint{font-size:11px; color:var(--ink-soft); text-align:center; padding:0 18px 4px;}
-  @media(max-width:560px){ .story-title{max-width:32vw;font-size:22px;} .tool span.lbl{display:none;} .tool .ic{font-size:19px;} }
+  @media(max-width:560px){ .story-title{max-width:30vw;font-size:21px;} .tool span.lbl{display:none;} .tool .ic{font-size:20px;} .actions .btn{padding:7px 10px;} }
 </style>
 </head>
 <body>
@@ -105,8 +114,8 @@
     <div class="spacer"></div>
     <div class="actions">
       <div class="paper-toggle" title="Paper style for this page">
-        <div class="pt sel" data-paper="grid" style="background-image:linear-gradient(#e9e3d6 1px,transparent 1px),linear-gradient(90deg,#e9e3d6 1px,transparent 1px);background-size:7px 7px;"></div>
-        <div class="pt" data-paper="dot" style="background-image:radial-gradient(#cfc6ba 1.4px,transparent 1.4px);background-size:7px 7px;"></div>
+        <div class="pt sel" data-paper="grid" style="background-image:linear-gradient(#e8e1f6 1px,transparent 1px),linear-gradient(90deg,#e8e1f6 1px,transparent 1px);background-size:7px 7px;"></div>
+        <div class="pt" data-paper="dot" style="background-image:radial-gradient(#cfc6ea 1.4px,transparent 1.4px);background-size:7px 7px;"></div>
         <div class="pt" data-paper="plain"></div>
       </div>
       <button class="btn ghost" id="newBtn">✦ New</button>
@@ -118,12 +127,34 @@
 
   <div class="cover-row">
     <div class="cover-prev" id="coverPrev">✿</div>
-    <button class="btn ghost" id="coverBtn">Set cover photo (used on the homepage card)</button>
+    <button class="btn ghost" id="coverBtn">Set cover photo (homepage card image)</button>
     <input type="file" id="coverFile" accept="image/*" hidden>
   </div>
 
   <div class="tabs" id="tabs"></div>
-  <div class="hint">Tap any element to move (green dot), resize (pink corner), or delete (×). Add pages to extend a story.</div>
+  <div class="hint">Tap an element to move (purple dot), resize (corner), rotate (↻) or delete (×). Tap text to edit and format it.</div>
+
+  <div class="fmtbar" id="fmtbar">
+    <select id="fFont" title="Font"></select>
+    <div class="sep"></div>
+    <button class="fb" id="szMinus" title="Smaller">A−</button><span class="szval" id="szVal">20</span><button class="fb" id="szPlus" title="Bigger">A+</button>
+    <div class="sep"></div>
+    <button class="fb" id="fBold" title="Bold"><b>B</b></button>
+    <button class="fb" id="fItalic" title="Italic"><i>I</i></button>
+    <button class="fb" id="fUnder" title="Underline"><u>U</u></button>
+    <div class="sep"></div>
+    <button class="fb" id="alL" title="Left">L</button>
+    <button class="fb" id="alC" title="Centre">C</button>
+    <button class="fb" id="alR" title="Right">R</button>
+    <div class="sep"></div>
+    <span class="sw" data-c="#4b4361" style="background:#4b4361"></span>
+    <span class="sw" data-c="#8367c7" style="background:#8367c7"></span>
+    <span class="sw" data-c="#c77fb3" style="background:#c77fb3"></span>
+    <span class="sw" data-c="#6c91c2" style="background:#6c91c2"></span>
+    <span class="sw" data-c="#5a9e86" style="background:#5a9e86"></span>
+    <span class="sw" data-c="#d59a55" style="background:#d59a55"></span>
+    <input type="color" id="fColor" value="#4b4361" title="Custom colour">
+  </div>
 
   <div class="stage" id="stage">
     <div class="stage-inner">
@@ -139,11 +170,10 @@
   </div>
 </div>
 
-<!-- settings / token modal -->
 <div class="mask" id="settingsMask">
   <div class="modal">
     <h3>Publishing key</h3>
-    <p>Paste a GitHub fine-grained token with <b>Contents: Read and write</b> on the <b>Dhanashri-Journal</b> repo. It is stored only in this browser and never published. Without it, this editor cannot save stories online.</p>
+    <p>Paste a GitHub fine-grained token with <b>Contents: Read and write</b> on the <b>Dhanashri-Journal</b> repo. It is stored only in this browser and never published.</p>
     <input type="password" id="tokenInput" placeholder="github_pat_..." autocomplete="off">
     <div class="row">
       <button class="btn ghost" id="clearToken">Clear</button>
@@ -153,19 +183,16 @@
   </div>
 </div>
 
-<!-- open existing story modal -->
 <div class="mask" id="openMask">
   <div class="modal">
     <h3>Open a published story</h3>
-    <p>Pick a story to edit or extend. Re-publishing will update it.</p>
+    <p>Pick a story to edit or extend. Re-publishing updates it.</p>
     <div class="story-list" id="storyList"><div style="color:var(--ink-soft);font-size:13px;">Loading...</div></div>
     <div class="row"><button class="btn ghost" id="closeOpen">Cancel</button></div>
   </div>
 </div>
 
-<!-- sticker sheet -->
 <div class="sheet-mask" id="sheetMask"><div class="sheet" id="sheet"></div></div>
-
 <div class="toast" id="toast"></div>
 
 <script src="assets/core.js"></script>
@@ -179,110 +206,125 @@ const STICKERS={
   "Travel & places":["✈️","🗺️","🏝️","🌊","⛩️","🗼","🏖️","🧳","📍","🚆","🛵","🛶","🌅","🏔️","🏜️","⛱️"],
   "Food & drinks":["☕","🧋","🍜","🍕","🍰","🍓","🥐","🍦","🍵","🥗","🍱","🍣","🧁","🍩","🥥","🍷"],
   "Nature & weather":["🌷","🌿","🍂","🌙","⭐","🌸","☀️","🌧️","❄️","🌈","🍃","🐚","🌻","🌊","🌼","🪴"],
-  "Cute & feelings":["🐰","🐻","🐱","💌","📸","🎀","✨","💕","🫶","😊","🥰","💭","🦋","🍭","🧸","💗"]
+  "Cute & feelings":["🐰","🐻","🐱","💌","📸","🎀","✨","💕","🫶","😊","🥰","💭","🦋","🍭","🧸","💗"],
+  "Hearts & sparkle":["💜","💗","💖","💝","🤍","💟","🌟","⚡","🔮","🫧","🪄","🎐","🕊️","🍇","🪻","🌌"]
 };
-const WASHI=["#d9a8a4","#a9b89c","#d8c3a5","#e6c7b8","#bcd0d8","#e8d3a0","#c9b8d8","#f0c9c4"];
+const WASHI=["#b9a7e3","#c6cdf2","#d8ccf2","#f1c7e3","#cfe7dc","#e8c7e2","#c2dce8","#e6d3a0"];
 
 function blankPage(){ return {paper:'grid', elements:[]}; }
 function newStory(){ return {id:null, title:'', date:J.today(), thumb:'', pages:[blankPage()], current:0}; }
 
 let story = loadDraft() || newStory();
 if(typeof story.current!=='number') story.current=0;
-let selectedEl=null, zTop=10, scale=1;
+let selNode=null, selData=null, zTop=10, scale=1;
 
-const page=document.getElementById('page');
-const scaler=document.getElementById('scaler');
-const tabsEl=document.getElementById('tabs');
-const storyTitle=document.getElementById('storyTitle');
-const storyDate=document.getElementById('storyDate');
-const coverPrev=document.getElementById('coverPrev');
-const toast=document.getElementById('toast');
+const page=document.getElementById('page'), scaler=document.getElementById('scaler');
+const tabsEl=document.getElementById('tabs'), storyTitle=document.getElementById('storyTitle');
+const storyDate=document.getElementById('storyDate'), coverPrev=document.getElementById('coverPrev');
+const toast=document.getElementById('toast'), fmtbar=document.getElementById('fmtbar');
 
 function loadDraft(){ try{ const r=localStorage.getItem(DRAFT); if(r) return JSON.parse(r);}catch(e){} return null; }
 function saveDraft(){ try{ localStorage.setItem(DRAFT, JSON.stringify(story)); }catch(e){} }
 function getToken(){ try{ return localStorage.getItem(TOKEN)||''; }catch(e){ return ''; } }
 function showToast(msg, ms){ toast.textContent=msg; toast.classList.add('show'); clearTimeout(toast._t); if(ms!==0) toast._t=setTimeout(()=>toast.classList.remove('show'), ms||2600); }
-
 function curPage(){ return story.pages[story.current]; }
 
-/* ---------- scaling ---------- */
-function fitScale(){
-  const avail=document.getElementById('stage').clientWidth-32;
-  scale=Math.min(1, avail/PAGE_W);
-  scaler.style.transform='scale('+scale+')'; scaler.style.width=PAGE_W+'px'; scaler.style.height=(page.offsetHeight*scale)+'px';
-}
+function fitScale(){ const avail=document.getElementById('stage').clientWidth-32; scale=Math.min(1, avail/PAGE_W);
+  scaler.style.transform='scale('+scale+')'; scaler.style.width=PAGE_W+'px'; scaler.style.height=(page.offsetHeight*scale)+'px'; }
 window.addEventListener('resize', fitScale);
+
+/* ---------- format bar ---------- */
+(function buildFontOptions(){ const f=document.getElementById('fFont');
+  Object.keys(J.FONTS).forEach(k=>{ const o=document.createElement('option'); o.value=k; o.textContent=J.FONTS[k].label; f.appendChild(o); }); })();
+function toHex(c){ try{ const ctx=document.createElement('canvas').getContext('2d'); ctx.fillStyle='#000'; ctx.fillStyle=c; return ctx.fillStyle; }catch(e){ return '#4b4361'; } }
+function setAlign(a){ ['alL','alC','alR'].forEach(id=>document.getElementById(id).classList.remove('active'));
+  document.getElementById(a==='center'?'alC':a==='right'?'alR':'alL').classList.add('active'); }
+function showFmt(){ fmtbar.style.display='flex';
+  document.getElementById('fFont').value=selData.font||'gaegu';
+  document.getElementById('szVal').textContent=(selData.size||20);
+  document.getElementById('fBold').classList.toggle('active', !!selData.bold);
+  document.getElementById('fItalic').classList.toggle('active', !!selData.italic);
+  document.getElementById('fUnder').classList.toggle('active', !!selData.underline);
+  setAlign(selData.align||'left');
+  document.getElementById('fColor').value=toHex(selData.color||'#4b4361'); fitScale(); }
+function hideFmt(){ fmtbar.style.display='none'; fitScale(); }
+function applyToSel(){ if(!selNode||!selData||selData.type!=='text') return; J.applyTextStyle(selNode.querySelector('.text-body'), selData); saveDraft(); }
+
+document.getElementById('fFont').onchange=function(){ if(selData){ selData.font=this.value; applyToSel(); } };
+document.getElementById('szMinus').onclick=()=>{ if(!selData) return; selData.size=Math.max(12,(selData.size||20)-2); document.getElementById('szVal').textContent=selData.size; applyToSel(); };
+document.getElementById('szPlus').onclick=()=>{ if(!selData) return; selData.size=Math.min(80,(selData.size||20)+2); document.getElementById('szVal').textContent=selData.size; applyToSel(); };
+document.getElementById('fBold').onclick=function(){ if(!selData) return; selData.bold=!selData.bold; this.classList.toggle('active',selData.bold); applyToSel(); };
+document.getElementById('fItalic').onclick=function(){ if(!selData) return; selData.italic=!selData.italic; this.classList.toggle('active',selData.italic); applyToSel(); };
+document.getElementById('fUnder').onclick=function(){ if(!selData) return; selData.underline=!selData.underline; this.classList.toggle('active',selData.underline); applyToSel(); };
+document.getElementById('alL').onclick=()=>{ if(!selData) return; selData.align='left'; setAlign('left'); applyToSel(); };
+document.getElementById('alC').onclick=()=>{ if(!selData) return; selData.align='center'; setAlign('center'); applyToSel(); };
+document.getElementById('alR').onclick=()=>{ if(!selData) return; selData.align='right'; setAlign('right'); applyToSel(); };
+document.querySelectorAll('.fmtbar .sw').forEach(sw=>{ sw.onclick=()=>{ if(!selData) return; selData.color=sw.dataset.c; document.getElementById('fColor').value=toHex(sw.dataset.c); applyToSel(); }; });
+document.getElementById('fColor').oninput=function(){ if(!selData) return; selData.color=this.value; applyToSel(); };
 
 /* ---------- render ---------- */
 function renderTabs(){
   tabsEl.innerHTML='';
-  story.pages.forEach((pg,i)=>{
-    const t=document.createElement('div'); t.className='tab'+(i===story.current?' active':'');
+  story.pages.forEach((pg,i)=>{ const t=document.createElement('div'); t.className='tab'+(i===story.current?' active':'');
     t.innerHTML='Page '+(i+1)+(story.pages.length>1?'<span class="x">×</span>':'');
-    t.onclick=(e)=>{ if(e.target.classList.contains('x')){ if(confirm('Delete this page?')){ story.pages.splice(i,1); if(story.current>=story.pages.length) story.current=story.pages.length-1; selectedEl=null; saveDraft(); renderAll(); } return; } story.current=i; selectedEl=null; renderAll(); };
-    tabsEl.appendChild(t);
-  });
+    t.onclick=(e)=>{ if(e.target.classList.contains('x')){ if(confirm('Delete this page?')){ story.pages.splice(i,1); if(story.current>=story.pages.length) story.current=story.pages.length-1; deselect(); saveDraft(); renderAll(); } return; } story.current=i; deselect(); renderAll(); };
+    tabsEl.appendChild(t); });
   const add=document.createElement('div'); add.className='tab add'; add.textContent='+'; add.title='Add page';
-  add.onclick=()=>{ story.pages.push(blankPage()); story.current=story.pages.length-1; selectedEl=null; saveDraft(); renderAll(); };
+  add.onclick=()=>{ story.pages.push(blankPage()); story.current=story.pages.length-1; deselect(); saveDraft(); renderAll(); };
   tabsEl.appendChild(add);
 }
-
 function renderAll(){
   renderTabs();
   storyTitle.value=story.title||''; storyDate.value=story.date||J.today();
-  coverPrev.innerHTML = story.thumb ? '<img src="'+story.thumb+'" style="width:100%;height:100%;object-fit:cover;border-radius:6px;">' : '✿';
-  const pg=curPage();
-  page.className='page '+(pg.paper||'grid');
+  coverPrev.innerHTML = story.thumb ? '<img src="'+story.thumb+'" style="width:100%;height:100%;object-fit:cover;">' : '✿';
+  const pg=curPage(); page.className='page '+(pg.paper||'grid');
   document.querySelectorAll('.paper-toggle .pt').forEach(p=>p.classList.toggle('sel', p.dataset.paper===(pg.paper||'grid')));
   page.innerHTML='';
-  // page header (date stamp + page label so it feels like a journal)
-  const head=document.createElement('div'); head.className='page-head';
-  head.innerHTML='<div class="date-stamp"><span class="date-pin"></span><span class="d-text">'+J.escapeHtml(J.formatDate(story.date))+'</span></div>'+
-                 '<div class="page-title">'+J.escapeHtml(story.title||'')+'</div>';
-  page.appendChild(head);
+  if(story.current===0){ const head=document.createElement('div'); head.className='page-head';
+    head.innerHTML='<div class="date-stamp"><span class="date-pin"></span><span class="d-text">'+J.escapeHtml(J.formatDate(story.date))+'</span></div>'+
+                   '<div class="page-title">'+J.escapeHtml(story.title||'')+'</div>';
+    page.appendChild(head); }
   pg.elements.forEach(d=> page.appendChild(buildEl(d, pg)));
   page.onpointerdown=(e)=>{ if(e.target===page) deselect(); };
   requestAnimationFrame(fitScale); saveDraft();
 }
-function deselect(){ if(selectedEl) selectedEl.classList.remove('selected'); selectedEl=null; }
-function select(node){ deselect(); selectedEl=node; node.classList.add('selected'); zTop++; node.style.zIndex=zTop; }
+function deselect(){ if(selNode) selNode.classList.remove('selected'); selNode=null; selData=null; hideFmt(); }
+function select(node){ if(selNode && selNode!==node) selNode.classList.remove('selected'); selNode=node; selData=node.__data; node.classList.add('selected'); zTop++; node.style.zIndex=zTop;
+  if(selData && selData.type==='text') showFmt(); else hideFmt(); }
+function applyRot(el,d){ el.style.transform='rotate('+(d.rot||0)+'deg)'; }
 
 function buildEl(d, pg){
-  const el=document.createElement('div'); el.className='el el-'+d.type+(d.font==='hand'?' hand':'');
+  const el=document.createElement('div'); el.className='el el-'+d.type; el.__data=d;
   el.style.left=(d.x||40)+'px'; el.style.top=(d.y||120)+'px'; if(d.w) el.style.width=d.w+'px';
   if(d.type==='text'){
-    const b=document.createElement('div'); b.className='text-body'; b.contentEditable='true'; b.innerText=d.content||'';
-    if(d.color) b.style.color=d.color;
+    const b=document.createElement('div'); b.className='text-body'; b.contentEditable='true'; b.innerText=d.content||''; J.applyTextStyle(b,d);
     b.addEventListener('input',()=>{ d.content=b.innerText; saveDraft(); });
     b.addEventListener('pointerdown',e=>{ select(el); e.stopPropagation(); });
     el.appendChild(b);
-    const tools=document.createElement('div'); tools.className='text-tools';
-    ['#5b4f49','#c0817d','#8a9a7b','#9a86b0','#c79a5b'].forEach(c=>{ const sw=document.createElement('div'); sw.className='sw'; sw.style.background=c;
-      sw.onclick=(e)=>{ e.stopPropagation(); d.color=c; b.style.color=c; saveDraft(); }; tools.appendChild(sw); });
-    const fb=document.createElement('div'); fb.className='tt'; fb.textContent='Aa';
-    fb.onclick=(e)=>{ e.stopPropagation(); d.font=d.font==='hand'?'cute':'hand'; el.classList.toggle('hand', d.font==='hand'); saveDraft(); };
-    tools.appendChild(fb); el.appendChild(tools);
   } else if(d.type==='photo'){
     const img=document.createElement('img'); img.src=d.src; img.draggable=false; el.appendChild(img);
     const cap=document.createElement('div'); cap.className='cap'; cap.contentEditable='true'; cap.innerText=d.caption||'';
     cap.addEventListener('input',()=>{ d.caption=cap.innerText; saveDraft(); });
     cap.addEventListener('pointerdown',e=>{ select(el); e.stopPropagation(); });
-    el.appendChild(cap); el.style.transform='rotate('+(d.rot||-1.4)+'deg)';
+    el.appendChild(cap); applyRot(el,d);
   } else if(d.type==='sticker'){
-    const s=document.createElement('span'); s.className='s-emoji'; s.textContent=d.emoji; if(d.size) s.style.fontSize=d.size+'px'; el.appendChild(s);
+    const s=document.createElement('span'); s.className='s-emoji'; s.textContent=d.emoji; if(d.size) s.style.fontSize=d.size+'px'; el.appendChild(s); applyRot(el,d);
+  } else if(d.type==='imgsticker'){
+    const img=document.createElement('img'); img.src=d.src; img.draggable=false; el.appendChild(img); applyRot(el,d);
   } else if(d.type==='washi'){
-    const t=document.createElement('div'); t.className='tape'; t.style.background=d.color||'#d9a8a4'; if(d.w) t.style.width=d.w+'px';
-    el.style.transform='rotate('+(d.rot||-3)+'deg)'; el.appendChild(t);
+    const t=document.createElement('div'); t.className='tape'; t.style.background=d.color||'#b9a7e3'; if(d.w) t.style.width=d.w+'px'; el.appendChild(t); applyRot(el,d);
   }
   const grip=document.createElement('div'); grip.className='grip'; grip.textContent='✥'; el.appendChild(grip);
   const ctrl=document.createElement('div'); ctrl.className='ctrl';
+  if(d.type!=='text'){ const rot=document.createElement('div'); rot.className='dot'; rot.textContent='↻'; rot.title='rotate';
+    rot.onpointerdown=(e)=>{ e.stopPropagation(); d.rot=((d.rot||0)+12); applyRot(el,d); saveDraft(); }; ctrl.appendChild(rot); }
   const del=document.createElement('div'); del.className='dot del'; del.textContent='×';
-  del.onpointerdown=(e)=>{ e.stopPropagation(); pg.elements=pg.elements.filter(x=>x!==d); deselect(); renderAll(); };
-  ctrl.appendChild(del); el.appendChild(ctrl);
+  del.onpointerdown=(e)=>{ e.stopPropagation(); pg.elements=pg.elements.filter(x=>x!==d); deselect(); renderAll(); }; ctrl.appendChild(del);
+  el.appendChild(ctrl);
   const rz=document.createElement('div'); rz.className='resize'; rz.textContent='⤡'; el.appendChild(rz); makeResizable(el,rz,d);
   el.addEventListener('pointerdown',(e)=>{ if(e.target===grip||e.target.classList.contains('resize')) return; if(d.type!=='text') select(el); });
   makeDraggable(el, grip, d);
-  if(d.type==='sticker'||d.type==='washi') makeDraggable(el, el, d, grip);
+  if(d.type==='sticker'||d.type==='washi'||d.type==='imgsticker') makeDraggable(el, el, d, grip);
   if(d.type==='photo') makeDraggable(el, el.querySelector('img'), d);
   return el;
 }
@@ -291,7 +333,7 @@ function makeDraggable(el, handle, d, exclude){
   let sx,sy,ox,oy,drag=false;
   handle.addEventListener('pointerdown',(e)=>{
     if(exclude && e.target===exclude) return;
-    if(e.target.classList && (e.target.classList.contains('resize')||e.target.classList.contains('dot')||e.target.classList.contains('sw')||e.target.classList.contains('tt'))) return;
+    if(e.target.classList && (e.target.classList.contains('resize')||e.target.classList.contains('dot'))) return;
     drag=true; select(el); handle.setPointerCapture(e.pointerId);
     sx=e.clientX; sy=e.clientY; ox=parseFloat(el.style.left)||0; oy=parseFloat(el.style.top)||0; e.preventDefault();
   });
@@ -307,93 +349,91 @@ function makeResizable(el, handle, d){
   handle.addEventListener('pointerdown',(e)=>{ drag=true; select(el); handle.setPointerCapture(e.pointerId); sx=e.clientX;
     if(d.type==='sticker') of=d.size||54; else ow=el.offsetWidth; e.preventDefault(); e.stopPropagation(); });
   handle.addEventListener('pointermove',(e)=>{ if(!drag) return; const dx=(e.clientX-sx)/scale;
-    if(d.type==='sticker'){ const ns=Math.max(20,Math.min(of+dx,200)); el.querySelector('.s-emoji').style.fontSize=ns+'px'; d.size=ns; }
-    else { const nw=Math.max(60,Math.min(ow+dx,PAGE_W-20)); el.style.width=nw+'px'; d.w=nw; if(d.type==='washi') el.querySelector('.tape').style.width=nw+'px'; } });
+    if(d.type==='sticker'){ const ns=Math.max(20,Math.min(of+dx,220)); el.querySelector('.s-emoji').style.fontSize=ns+'px'; d.size=ns; }
+    else { const nw=Math.max(50,Math.min(ow+dx,PAGE_W-20)); el.style.width=nw+'px'; d.w=nw; if(d.type==='washi') el.querySelector('.tape').style.width=nw+'px'; } });
   const end=()=>{ if(!drag) return; drag=false; saveDraft(); };
   handle.addEventListener('pointerup',end); handle.addEventListener('pointercancel',end);
 }
+function selectLast(){ const nodes=page.querySelectorAll('.el'); const last=nodes[nodes.length-1]; if(last) select(last); return last; }
 
 /* ---------- add elements ---------- */
-document.getElementById('addText').onclick=()=>{ curPage().elements.push({id:J.uid(),type:'text',x:120,y:300,w:240,content:'',font:'cute',color:'#5b4f49'}); renderAll();
-  setTimeout(()=>{ const t=page.querySelector('.el-text:last-of-type .text-body'); if(t) t.focus(); },30); };
+document.getElementById('addText').onclick=()=>{ curPage().elements.push({id:J.uid(),type:'text',x:120,y:280,w:260,content:'',font:'gaegu',size:20,bold:false,italic:false,underline:false,align:'left',color:'#4b4361'}); renderAll();
+  setTimeout(()=>{ const last=selectLast(); if(last){ const b=last.querySelector('.text-body'); if(b) b.focus(); } },40); };
 const photoFile=document.getElementById('photoFile');
 document.getElementById('addPhoto').onclick=()=>photoFile.click();
 photoFile.onchange=async(e)=>{ const f=e.target.files[0]; if(!f) return; try{ const src=await J.compress(f);
-  curPage().elements.push({id:J.uid(),type:'photo',x:200,y:340,w:220,src,caption:'',rot:(Math.random()*5-2.5)}); renderAll(); }catch(err){ showToast('Could not load image'); } photoFile.value=''; };
+  curPage().elements.push({id:J.uid(),type:'photo',x:200,y:330,w:220,src,caption:'',rot:(Math.random()*5-2.5)}); renderAll(); }catch(err){ showToast('Could not load image'); } photoFile.value=''; };
 
-/* cover */
 const coverFile=document.getElementById('coverFile');
 document.getElementById('coverBtn').onclick=()=>coverFile.click();
-coverFile.onchange=async(e)=>{ const f=e.target.files[0]; if(!f) return; try{ story.thumb=await J.compress(f,500,0.7); renderAll(); showToast('Cover set'); }catch(err){ showToast('Could not load image'); } coverFile.value=''; };
+coverFile.onchange=async(e)=>{ const f=e.target.files[0]; if(!f) return; try{ story.thumb=await J.compress(f,520,0.72); renderAll(); showToast('Cover set'); }catch(err){ showToast('Could not load image'); } coverFile.value=''; };
 
-/* paper / title / date */
-document.querySelectorAll('.paper-toggle .pt').forEach(p=>{ p.onclick=()=>{ curPage().paper=p.dataset.paper; saveDraft(); renderAll(); }; });
-storyTitle.addEventListener('input',()=>{ story.title=storyTitle.value; saveDraft(); document.querySelector('.page-title').textContent=story.title; });
+document.querySelectorAll('.paper-toggle .pt').forEach(p=>{ p.onclick=()=>{ curPage().paper=p.dataset.paper; deselect(); saveDraft(); renderAll(); }; });
+storyTitle.addEventListener('input',()=>{ story.title=storyTitle.value; saveDraft(); const t=document.querySelector('.page-title'); if(t) t.textContent=story.title; });
 storyDate.addEventListener('input',()=>{ story.date=storyDate.value; saveDraft(); const dt=document.querySelector('.d-text'); if(dt) dt.textContent=J.formatDate(story.date); });
 
 /* ---------- sticker sheet ---------- */
 const sheetMask=document.getElementById('sheetMask'), sheet=document.getElementById('sheet');
 document.getElementById('addSticker').onclick=openSheet;
 sheetMask.onclick=(e)=>{ if(e.target===sheetMask) sheetMask.classList.remove('open'); };
+function addSticker(obj){ curPage().elements.push(Object.assign({id:J.uid(),x:300,y:300},obj)); sheetMask.classList.remove('open'); renderAll(); }
 function openSheet(){
   sheet.innerHTML='<h3>Add a sticker</h3>';
-  const cat=document.createElement('div'); cat.className='cat'; cat.textContent='Washi tape'; sheet.appendChild(cat);
+  let c=document.createElement('div'); c.className='cat'; c.textContent='Your own'; sheet.appendChild(c);
+  const cr=document.createElement('div'); cr.className='customrow';
+  const inp=document.createElement('input'); inp.type='text'; inp.placeholder='Paste any emoji or symbol 🌟'; inp.maxLength=8;
+  const addE=document.createElement('button'); addE.className='btn primary'; addE.textContent='Add';
+  addE.onclick=()=>{ const v=inp.value.trim(); if(v) addSticker({type:'sticker',emoji:v,size:54,rot:0}); };
+  const addImg=document.createElement('button'); addImg.className='btn ghost'; addImg.textContent='🖼 Image sticker';
+  const imgIn=document.createElement('input'); imgIn.type='file'; imgIn.accept='image/*'; imgIn.style.display='none';
+  addImg.onclick=()=>imgIn.click();
+  imgIn.onchange=async(e)=>{ const f=e.target.files[0]; if(!f) return; try{ const src=await J.compress(f,440,1,'image/png'); addSticker({type:'imgsticker',w:120,src,rot:0}); }catch(err){ showToast('Could not load image'); } };
+  cr.appendChild(inp); cr.appendChild(addE); cr.appendChild(addImg); cr.appendChild(imgIn); sheet.appendChild(cr);
+
+  c=document.createElement('div'); c.className='cat'; c.textContent='Washi tape'; sheet.appendChild(c);
   const wrow=document.createElement('div'); wrow.className='washirow';
-  WASHI.forEach(c=>{ const b=document.createElement('button'); b.style.background=c;
-    b.onclick=()=>{ curPage().elements.push({id:J.uid(),type:'washi',x:160,y:200,w:120,color:c,rot:(Math.random()*8-4)}); sheetMask.classList.remove('open'); renderAll(); }; wrow.appendChild(b); });
+  WASHI.forEach(col=>{ const b=document.createElement('button'); b.style.background=col; b.onclick=()=>addSticker({type:'washi',w:120,color:col,rot:(Math.random()*8-4)}); wrow.appendChild(b); });
   sheet.appendChild(wrow);
-  Object.keys(STICKERS).forEach(name=>{ const c=document.createElement('div'); c.className='cat'; c.textContent=name; sheet.appendChild(c);
+
+  Object.keys(STICKERS).forEach(name=>{ const cc=document.createElement('div'); cc.className='cat'; cc.textContent=name; sheet.appendChild(cc);
     const g=document.createElement('div'); g.className='stickgrid';
-    STICKERS[name].forEach(em=>{ const b=document.createElement('button'); b.textContent=em;
-      b.onclick=()=>{ curPage().elements.push({id:J.uid(),type:'sticker',x:300,y:300,emoji:em,size:54}); sheetMask.classList.remove('open'); renderAll(); }; g.appendChild(b); }); sheet.appendChild(g); });
+    STICKERS[name].forEach(em=>{ const b=document.createElement('button'); b.textContent=em; b.onclick=()=>addSticker({type:'sticker',emoji:em,size:54,rot:0}); g.appendChild(b); }); sheet.appendChild(g); });
   sheetMask.classList.add('open');
 }
 
-/* ---------- new ---------- */
-document.getElementById('newBtn').onclick=()=>{ if(confirm('Start a new blank story? Unpublished changes here will be cleared.')){ story=newStory(); selectedEl=null; renderAll(); } };
+/* ---------- new / settings / open / publish ---------- */
+document.getElementById('newBtn').onclick=()=>{ if(confirm('Start a new blank story? Unpublished changes here will be cleared.')){ story=newStory(); deselect(); renderAll(); } };
 
-/* ---------- settings / token ---------- */
 const settingsMask=document.getElementById('settingsMask');
 document.getElementById('settingsBtn').onclick=()=>{ document.getElementById('tokenInput').value=getToken(); settingsMask.classList.add('open'); };
 document.getElementById('closeSettings').onclick=()=>settingsMask.classList.remove('open');
 document.getElementById('saveToken').onclick=()=>{ try{ localStorage.setItem(TOKEN, document.getElementById('tokenInput').value.trim()); }catch(e){} settingsMask.classList.remove('open'); showToast('Key saved'); };
 document.getElementById('clearToken').onclick=()=>{ try{ localStorage.removeItem(TOKEN); }catch(e){} document.getElementById('tokenInput').value=''; showToast('Key cleared'); };
 
-/* ---------- GitHub API ---------- */
 function authHeaders(){ return { 'Authorization':'Bearer '+getToken(), 'Accept':'application/vnd.github+json', 'Content-Type':'application/json' }; }
-async function ghGet(path){
-  const r=await fetch('https://api.github.com/repos/'+U+'/'+R+'/contents/'+path, {headers:authHeaders(), cache:'no-store'});
-  if(r.status===404) return null;
-  if(!r.ok) throw new Error('Read failed ('+r.status+'). Check the token and repo name.');
-  const d=await r.json(); return {sha:d.sha, text:J.b64decode(d.content)};
-}
-async function ghPut(path, content, message, sha){
-  const body={message, content:J.b64encode(content)}; if(sha) body.sha=sha;
+async function ghGet(path){ const r=await fetch('https://api.github.com/repos/'+U+'/'+R+'/contents/'+path, {headers:authHeaders(), cache:'no-store'});
+  if(r.status===404) return null; if(!r.ok) throw new Error('Read failed ('+r.status+'). Check token and repo.'); const d=await r.json(); return {sha:d.sha, text:J.b64decode(d.content)}; }
+async function ghPut(path, content, message, sha){ const body={message, content:J.b64encode(content)}; if(sha) body.sha=sha;
   const r=await fetch('https://api.github.com/repos/'+U+'/'+R+'/contents/'+path, {method:'PUT', headers:authHeaders(), body:JSON.stringify(body)});
-  if(!r.ok){ const t=await r.text(); throw new Error('Save failed ('+r.status+'). '+t.slice(0,140)); }
-  return r.json();
-}
+  if(!r.ok){ const t=await r.text(); throw new Error('Save failed ('+r.status+'). '+t.slice(0,140)); } return r.json(); }
 
-/* ---------- open published story ---------- */
 const openMask=document.getElementById('openMask'), storyList=document.getElementById('storyList');
 document.getElementById('closeOpen').onclick=()=>openMask.classList.remove('open');
 document.getElementById('openBtn').onclick=async()=>{
   if(!getToken()){ showToast('Add your publishing key first (⚙)'); document.getElementById('settingsBtn').click(); return; }
   openMask.classList.add('open'); storyList.innerHTML='<div style="color:var(--ink-soft);font-size:13px;">Loading...</div>';
-  try{
-    const idx=await ghGet('data/index.json'); const list= idx? (JSON.parse(idx.text)||[]) : [];
+  try{ const idx=await ghGet('data/index.json'); const list= idx? (JSON.parse(idx.text)||[]) : [];
     if(list.length===0){ storyList.innerHTML='<div style="color:var(--ink-soft);font-size:13px;">No published stories yet.</div>'; return; }
     storyList.innerHTML='';
     list.forEach(p=>{ const it=document.createElement('div'); it.className='item';
-      it.innerHTML=(p.thumb?'<img src="'+p.thumb+'">':'<div class="ph">✿</div>')+'<div><div style="font-family:var(--hand);font-size:20px;">'+J.escapeHtml(p.title||'Untitled')+'</div><div style="font-size:11px;color:var(--rose-deep);font-weight:700;">'+J.escapeHtml(J.formatDate(p.date))+'</div></div>';
+      it.innerHTML=(p.thumb?'<img src="'+p.thumb+'">':'<div class="ph">✿</div>')+'<div><div style="font-family:var(--hand);font-size:20px;">'+J.escapeHtml(p.title||'Untitled')+'</div><div style="font-size:11px;color:var(--lav-deep);font-weight:700;">'+J.escapeHtml(J.formatDate(p.date))+'</div></div>';
       it.onclick=async()=>{ try{ showToast('Loading story...',0); const pr=await ghGet('data/posts/'+p.id+'.json'); const post=JSON.parse(pr.text);
-        story={id:post.id, title:post.title||'', date:post.date||J.today(), thumb:p.thumb||'', pages:(post.pages&&post.pages.length)?post.pages:[blankPage()], current:0};
-        selectedEl=null; openMask.classList.remove('open'); renderAll(); showToast('Loaded — edit and Publish to update'); }catch(err){ showToast('Could not open story'); } };
+        story={id:post.id, title:post.title||'', date:post.date||J.today(), thumb:p.thumb||'', pages:(post.pages&&post.pages.length)?post.pages:[blankPage()], current:0, _loaded:true};
+        deselect(); openMask.classList.remove('open'); renderAll(); showToast('Loaded — edit and Publish to update'); }catch(err){ showToast('Could not open story'); } };
       storyList.appendChild(it); });
-  }catch(e){ storyList.innerHTML='<div style="color:#c0817d;font-size:13px;">'+J.escapeHtml(e.message)+'</div>'; }
+  }catch(e){ storyList.innerHTML='<div style="color:#c0617d;font-size:13px;">'+J.escapeHtml(e.message)+'</div>'; }
 };
 
-/* ---------- publish ---------- */
 document.getElementById('publishBtn').onclick=async()=>{
   if(!getToken()){ showToast('Add your publishing key first (⚙)'); document.getElementById('settingsBtn').click(); return; }
   if(!story.title.trim()){ showToast('Give the story a title first'); storyTitle.focus(); return; }
@@ -401,26 +441,18 @@ document.getElementById('publishBtn').onclick=async()=>{
   if(!story.id) story.id=J.slugify(story.title);
   showToast('Publishing...',0);
   try{
-    // unique id for brand-new stories
-    const idxExisting=await ghGet('data/index.json');
-    let list = idxExisting? (JSON.parse(idxExisting.text)||[]) : [];
+    const idxExisting=await ghGet('data/index.json'); let list= idxExisting? (JSON.parse(idxExisting.text)||[]) : [];
     if(!story._loaded && list.some(x=>x.id===story.id)){ let base=story.id,n=2; while(list.some(x=>x.id===base+'-'+n)) n++; story.id=base+'-'+n; }
-    // 1) write the post
-    const postPath='data/posts/'+story.id+'.json';
-    const existing=await ghGet(postPath);
+    const postPath='data/posts/'+story.id+'.json'; const existing=await ghGet(postPath);
     const postJson=JSON.stringify({id:story.id,title:story.title,date:story.date,pages:story.pages});
     await ghPut(postPath, postJson, (existing?'Update':'Add')+' story: '+story.title, existing?existing.sha:null);
-    // 2) update the index
-    list=list.filter(x=>x.id!==story.id);
-    list.unshift({id:story.id, title:story.title, date:story.date, thumb:story.thumb||''});
+    list=list.filter(x=>x.id!==story.id); list.unshift({id:story.id, title:story.title, date:story.date, thumb:story.thumb||''});
     list.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
     await ghPut('data/index.json', JSON.stringify(list), 'Update index: '+story.title, idxExisting?idxExisting.sha:null);
-    story._loaded=true; saveDraft();
-    showToast('Published! Live on the site in about a minute.',4000);
+    story._loaded=true; saveDraft(); showToast('Published! Live on the site in about a minute.',4000);
   }catch(e){ showToast(e.message, 6000); }
 };
 
-/* ---------- go ---------- */
 renderAll(); fitScale();
 if(!getToken()) setTimeout(()=>showToast('Tip: set your publishing key (⚙) before publishing', 4000), 800);
 })();

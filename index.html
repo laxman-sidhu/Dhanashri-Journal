@@ -6,14 +6,15 @@
 <title>Dhanashri Journal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Gaegu:wght@400;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Dancing+Script:wght@400;600;700&family=Gaegu:wght@400;700&family=Indie+Flower&family=Nunito:wght@400;600;700&family=Patrick+Hand&family=Quicksand:wght@400;600;700&family=Shadows+Into+Light&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
   <div class="site-head">
-    <div class="kicker">a little travel diary</div>
+    <div class="kicker">a little diary of places &amp; moments</div>
     <h1>Dhanashri Journal</h1>
-    <p>Stories, places, and small everyday moments.</p>
+    <div class="rule"></div>
+    <p>Stories, trips, and everyday memories.</p>
   </div>
   <div id="cards" class="cards"></div>
   <div id="loading" class="loading">opening the journal...</div>
@@ -22,23 +23,18 @@
 <script>
 (async function(){
   const J=window.JOURNAL;
-  const cards=document.getElementById('cards');
-  const loading=document.getElementById('loading');
+  const cards=document.getElementById('cards'), loading=document.getElementById('loading');
   try{
     const res=await fetch('data/index.json?t='+Date.now(), {cache:'no-store'});
     let list = res.ok ? await res.json() : [];
     loading.style.display='none';
     if(!Array.isArray(list) || list.length===0){
-      cards.innerHTML='<div class="empty"><div class="big">No stories yet</div><div>The first story will appear here soon.</div></div>';
-      return;
+      cards.innerHTML='<div class="empty"><div class="big">No stories yet</div><div>The first story will appear here soon.</div></div>'; return;
     }
     list.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
     list.forEach(p=>{
-      const a=document.createElement('a');
-      a.className='card'; a.href='story.html?id='+encodeURIComponent(p.id);
-      const thumb = p.thumb
-        ? '<img class="thumb" src="'+p.thumb+'" alt="">'
-        : '<div class="thumb placeholder">✿</div>';
+      const a=document.createElement('a'); a.className='card'; a.href='story.html?id='+encodeURIComponent(p.id);
+      const thumb = p.thumb ? '<img class="thumb" src="'+p.thumb+'" alt="">' : '<div class="thumb placeholder">✿</div>';
       a.innerHTML = thumb +
         '<div class="c-date">'+J.escapeHtml(J.formatDate(p.date))+'</div>'+
         '<div class="c-title">'+J.escapeHtml(p.title||'Untitled')+'</div>';
