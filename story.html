@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dhanashri Journal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Gaegu:wght@400;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <div class="reader-top">
+    <a class="btn ghost" href="index.html">← all stories</a>
+    <div id="storyDate" style="font-weight:700;color:var(--rose-deep);letter-spacing:.5px;"></div>
+  </div>
+  <div id="stage" class="reader-stage">
+    <div class="loading" id="loading">turning the page...</div>
+  </div>
+
+<script src="assets/core.js"></script>
+<script>
+(async function(){
+  const J=window.JOURNAL;
+  const stage=document.getElementById('stage');
+  const loading=document.getElementById('loading');
+  const id=new URLSearchParams(location.search).get('id');
+  if(!id){ loading.textContent='No story selected.'; return; }
+  try{
+    const res=await fetch('data/posts/'+encodeURIComponent(id)+'.json?t='+Date.now(), {cache:'no-store'});
+    if(!res.ok) throw new Error('not found');
+    const post=await res.json();
+    document.title = (post.title||'Story')+' — Dhanashri Journal';
+    document.getElementById('storyDate').textContent = J.formatDate(post.date);
+    loading.remove();
+    (post.pages||[]).forEach(pg=> J.renderPageRO(stage, pg));
+    if(!post.pages || post.pages.length===0){ stage.innerHTML='<div class="loading">This story has no pages yet.</div>'; }
+  }catch(e){
+    loading.textContent='Story not found.';
+  }
+})();
+</script>
+</body>
+</html>
