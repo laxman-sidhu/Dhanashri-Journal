@@ -73,7 +73,8 @@ window.JOURNAL = (function(){
     const pg=document.createElement('div'); pg.className='page '+(page.paper||'grid');
     (page.elements||[]).forEach(d=> pg.appendChild(buildElementRO(d)));
     scaler.appendChild(pg); holder.appendChild(scaler); mount.appendChild(holder);
-    const fit=()=>{ const avail=Math.min(mount.clientWidth, 800)-8; const sc=Math.min(1, avail/PAGE_W);
+    const fit=()=>{ const cs=getComputedStyle(mount); const pad=(parseFloat(cs.paddingLeft)||0)+(parseFloat(cs.paddingRight)||0);
+      const avail=Math.min(mount.clientWidth-pad, 800); const sc=Math.min(1, avail/PAGE_W);
       scaler.style.transform='scale('+sc+')'; holder.style.width=(PAGE_W*sc)+'px'; holder.style.height=(pg.offsetHeight*sc)+'px'; };
     requestAnimationFrame(fit); window.addEventListener('resize', fit);
     return pg;
