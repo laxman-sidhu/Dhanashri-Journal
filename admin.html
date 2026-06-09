@@ -40,10 +40,11 @@
   .fmtbar .sw{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid #fff;box-shadow:0 0 0 1px var(--paper-edge);}
   .fmtbar input[type=color]{width:32px;height:32px;border:none;background:none;cursor:pointer;padding:0;border-radius:8px;}
 
-  .stage{flex:1; overflow:auto; display:flex; justify-content:center; padding:6px 14px 96px;}
-  .stage-inner{margin:auto; position:relative; overflow:hidden;}
+  .stage{flex:1; overflow:auto; -webkit-overflow-scrolling:touch; touch-action:pan-y; display:flex; align-items:flex-start; justify-content:center; padding:6px 14px 120px;}
+  .stage-inner{margin:0 auto; position:relative; overflow:hidden;}
 
   .el.selected{outline:1.5px dashed var(--lav); outline-offset:4px; z-index:50; border-radius:6px;}
+  .el{touch-action:none;}
   .el .ctrl{position:absolute; top:-13px; right:-13px; display:none; gap:4px; z-index:60;}
   .el.selected .ctrl{display:flex;}
   .ctrl .dot{width:25px;height:25px;border-radius:50%; background:#fff; border:1px solid var(--paper-edge);
