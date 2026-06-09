@@ -3,21 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dhanashri's Journal</title>
+<title>Dhanashri Journal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Dancing+Script:wght@400;600;700&family=Gaegu:wght@400;700&family=Indie+Flower&family=Nunito:wght@400;600;700&family=Patrick+Hand&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Dancing+Script:wght@400;600;700&family=Gaegu:wght@400;700&family=Indie+Flower&family=Nunito:wght@400;600;700&family=Patrick+Hand&family=Quicksand:wght@400;600;700&family=Shadows+Into+Light&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
   <div class="reader-top">
     <a class="btn ghost" href="index.html">← all stories</a>
-    <button class="btn primary" id="pdfBtn" style="display:none;">⬇ Download PDF</button>
-  </div>
-  <div class="story-headline" id="headline" style="display:none;">
-    <div class="kicker" id="hlDate"></div>
-    <h1 id="hlTitle"></h1>
-    <div class="rule"></div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div id="storyDate" style="font-weight:700;color:var(--lav-deep);letter-spacing:.5px;"></div>
+      <button class="btn primary" id="pdfBtn" style="display:none;">⬇ Download PDF</button>
+    </div>
   </div>
   <div id="stage" class="reader-stage">
     <div class="loading" id="loading">turning the page...</div>
@@ -37,41 +35,43 @@
     if(!res.ok) throw new Error('not found');
     const post=await res.json();
     postTitle = post.title||'Story';
-    document.title = postTitle+' — Dhanashri\u2019s Journal';
-    document.getElementById('hlTitle').textContent = postTitle;
-    document.getElementById('hlDate').textContent = J.formatDate(post.date);
-    document.getElementById('headline').style.display='block';
+    document.title = postTitle+' — Dhanashri Journal';
+    document.getElementById('storyDate').textContent = J.formatDate(post.date);
     loading.remove();
-    (post.pages||[]).forEach(pg=> J.renderPageRO(stage, pg));
+    (post.pages||[]).forEach((pg,i)=> J.renderPageRO(stage, pg, i===0?{title:post.title,date:post.date}:null));
     if(!post.pages || post.pages.length===0){ stage.innerHTML='<div class="loading">This story has no pages yet.</div>'; }
     else { pdfBtn.style.display='inline-flex'; }
   }catch(e){ loading.textContent='Story not found.'; return; }
 
-  // ----- PDF (libraries load only on click, keeping the page fast) -----
+  // ----- PDF download -----
   function loadScript(src){ return new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=()=>rej(new Error('load '+src)); document.head.appendChild(s); }); }
   let libsLoaded=false;
-  async function ensureLibs(){ if(libsLoaded) return;
+  async function ensureLibs(){
+    if(libsLoaded) return;
     await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
-    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'); libsLoaded=true; }
+    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+    libsLoaded=true;
+  }
   pdfBtn.onclick=async()=>{
     const orig=pdfBtn.textContent; pdfBtn.disabled=true; pdfBtn.textContent='Preparing...';
     try{
       await ensureLibs();
       if(document.fonts && document.fonts.ready) await document.fonts.ready;
       const pages=[...stage.querySelectorAll('.page')];
-      const holders=[...stage.querySelectorAll('.page-holder')];
       const scalers=[...stage.querySelectorAll('.page-scaler')];
-      const saved=holders.map((h,i)=>({w:h.style.width,ht:h.style.height,ov:h.style.overflow,t:scalers[i].style.transform}));
-      holders.forEach((h,i)=>{ h.style.overflow='visible'; h.style.width='auto'; h.style.height='auto'; scalers[i].style.transform='none'; });
+      const saved=scalers.map(s=>({t:s.style.transform,h:s.style.height}));
+      scalers.forEach(s=>{ s.style.transform='none'; s.style.height='auto'; });
       const { jsPDF }=window.jspdf; let pdf=null;
       for(let i=0;i<pages.length;i++){
         pdfBtn.textContent='Page '+(i+1)+'/'+pages.length;
         const canvas=await html2canvas(pages[i], {scale:2, backgroundColor:'#faf8ff', useCORS:true, logging:false});
-        const w=canvas.width, h=canvas.height; const img=canvas.toDataURL('image/jpeg',0.92); const orient=w>h?'l':'p';
-        if(!pdf) pdf=new jsPDF({orientation:orient, unit:'px', format:[w,h]}); else pdf.addPage([w,h], orient);
+        const w=canvas.width, h=canvas.height; const img=canvas.toDataURL('image/jpeg',0.92);
+        const orient = w>h?'l':'p';
+        if(!pdf) pdf=new jsPDF({orientation:orient, unit:'px', format:[w,h]});
+        else pdf.addPage([w,h], orient);
         pdf.addImage(img,'JPEG',0,0,w,h);
       }
-      holders.forEach((h,i)=>{ h.style.width=saved[i].w; h.style.height=saved[i].ht; h.style.overflow=saved[i].ov; scalers[i].style.transform=saved[i].t; });
+      scalers.forEach((s,i)=>{ s.style.transform=saved[i].t; s.style.height=saved[i].h; });
       window.dispatchEvent(new Event('resize'));
       pdf.save((postTitle||'journal').replace(/[^a-z0-9]+/gi,'-').toLowerCase()+'.pdf');
     }catch(err){ alert('Sorry, the PDF could not be generated. '+(err.message||'')); }

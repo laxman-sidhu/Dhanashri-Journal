@@ -1,18 +1,18 @@
-/* ===== Dhanashri's Journal — shared core ===== */
+/* ===== Dhanashri Journal — shared core ===== */
 window.JOURNAL = (function(){
   const CONFIG = { USERNAME:"laxman-sidhu", REPO:"Dhanashri-Journal" };
   const PAGE_W = 760;
 
-  // curated journal fonts
+  // font key -> css family (labels used by editor)
   const FONTS = {
-    gaegu:    { css:"'Gaegu', cursive",          label:"Gaegu (cute)" },
-    caveat:   { css:"'Caveat', cursive",         label:"Caveat (handwritten)" },
-    patrick:  { css:"'Patrick Hand', cursive",   label:"Patrick Hand (neat)" },
-    indie:    { css:"'Indie Flower', cursive",   label:"Indie Flower (bubbly)" },
-    dancing:  { css:"'Dancing Script', cursive", label:"Dancing Script (elegant)" },
-    playfair: { css:"'Playfair Display', serif", label:"Playfair (classic serif)" },
-    quicksand:{ css:"'Quicksand', sans-serif",   label:"Quicksand (soft sans)" },
-    nunito:   { css:"'Nunito', sans-serif",      label:"Nunito (simple)" }
+    gaegu:   { css:"'Gaegu', cursive",          label:"Gaegu (cute)" },
+    caveat:  { css:"'Caveat', cursive",         label:"Caveat (hand)" },
+    patrick: { css:"'Patrick Hand', cursive",   label:"Patrick Hand" },
+    indie:   { css:"'Indie Flower', cursive",   label:"Indie Flower" },
+    shadows: { css:"'Shadows Into Light', cursive", label:"Shadows" },
+    dancing: { css:"'Dancing Script', cursive", label:"Dancing Script" },
+    quicksand:{css:"'Quicksand', sans-serif",   label:"Quicksand" },
+    nunito:  { css:"'Nunito', sans-serif",      label:"Nunito (clean)" }
   };
 
   function uid(){ return Math.random().toString(36).slice(2,9); }
@@ -53,7 +53,7 @@ window.JOURNAL = (function(){
     } else if(d.type==='photo'){
       const img=document.createElement('img'); img.src=d.src; img.draggable=false; el.appendChild(img);
       if(d.caption){ const cap=document.createElement('div'); cap.className='cap'; cap.textContent=d.caption; el.appendChild(cap); }
-      el.style.transform='rotate('+(d.rot||0)+'deg)';
+      el.style.transform='rotate('+(d.rot||-1.4)+'deg)';
     } else if(d.type==='sticker'){
       const s=document.createElement('span'); s.className='s-emoji'; s.textContent=d.emoji; if(d.size) s.style.fontSize=d.size+'px'; el.appendChild(s);
       if(d.rot) el.style.transform='rotate('+d.rot+'deg)';
@@ -66,15 +66,18 @@ window.JOURNAL = (function(){
     return el;
   }
 
-  // overflow-safe: holder reserves the SCALED footprint; scaler is absolutely placed inside it
-  function renderPageRO(mount, page){
-    const holder=document.createElement('div'); holder.className='page-holder';
+  // render one page read-only. opts = {title, date} to draw a header (first page).
+  function renderPageRO(mount, page, opts){
     const scaler=document.createElement('div'); scaler.className='page-scaler';
     const pg=document.createElement('div'); pg.className='page '+(page.paper||'grid');
+    if(opts){ const head=document.createElement('div'); head.className='page-head';
+      head.innerHTML='<div class="date-stamp"><span class="date-pin"></span><span class="d-text">'+escapeHtml(formatDate(opts.date))+'</span></div>'+
+                     '<div class="page-title">'+escapeHtml(opts.title||'')+'</div>';
+      pg.appendChild(head); }
     (page.elements||[]).forEach(d=> pg.appendChild(buildElementRO(d)));
-    scaler.appendChild(pg); holder.appendChild(scaler); mount.appendChild(holder);
-    const fit=()=>{ const avail=Math.min(mount.clientWidth, 800)-8; const sc=Math.min(1, avail/PAGE_W);
-      scaler.style.transform='scale('+sc+')'; holder.style.width=(PAGE_W*sc)+'px'; holder.style.height=(pg.offsetHeight*sc)+'px'; };
+    scaler.appendChild(pg); mount.appendChild(scaler);
+    const fit=()=>{ const avail=Math.min(mount.clientWidth, 800)-12; const sc=Math.min(1, avail/PAGE_W);
+      scaler.style.transform='scale('+sc+')'; scaler.style.width=PAGE_W+'px'; scaler.style.height=(pg.offsetHeight*sc)+'px'; };
     requestAnimationFrame(fit); window.addEventListener('resize', fit);
     return pg;
   }
