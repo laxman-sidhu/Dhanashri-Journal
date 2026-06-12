@@ -228,10 +228,12 @@ const STICKERS={
 const WASHI=["#b9a7e3","#c6cdf2","#d8ccf2","#f1c7e3","#cfe7dc","#e8c7e2","#c2dce8","#e6d3a0"];
 
 function blankPage(){ return {paper:'grid', elements:[]}; }
-function newStory(){ return {id:null, title:'', date:J.today(), thumb:'', pages:[blankPage()], current:0}; }
+function newStory(){ return {id:null, origId:null, title:'', date:J.today(), thumb:'', pages:[blankPage()], current:0}; }
 
 let story = loadDraft() || newStory();
 if(typeof story.current!=='number') story.current=0;
+/* origId = the filename id this session is bound to in GitHub (null until first publish) */
+if(story.origId===undefined) story.origId = (story._loaded && story.id) ? story.id : null;
 let selNode=null, selData=null, zTop=10, scale=1;
 
 const stage=document.getElementById('stage'), page=document.getElementById('page'), scaler=document.getElementById('scaler');
@@ -441,6 +443,7 @@ const ELEMENT_TYPES=['text','photo','sticker','imgsticker','washi'];
 function validateStoryJson(data){
   if(!data || typeof data!=='object' || Array.isArray(data)) return 'The file is not a story object.';
   if(data.title!=null && typeof data.title!=='string') return 'The story title is invalid.';
+  if(data.thumb!=null && typeof data.thumb!=='string') return 'The cover image is invalid.';
   if(!Array.isArray(data.pages) || data.pages.length===0) return 'The file has no pages, so it does not look like a journal story.';
   for(let i=0;i<data.pages.length;i++){
     const pg=data.pages[i];
@@ -462,21 +465,34 @@ importFile.onchange=(e)=>{
   if(!/\.json$/i.test(f.name)){ alert('Please choose a .json file.'); return; }
   const reader=new FileReader();
   reader.onerror=()=>showToast('Could not read the file');
-  reader.onload=()=>{
+  reader.onload=async()=>{
     let data=null;
     try{ data=JSON.parse(reader.result); }
     catch(err){ alert('Sorry, that file is not valid JSON, so it cannot be imported.\n\nPlease choose a story JSON file from this journal.'); return; }
     const problem=validateStoryJson(data);
     if(problem){ alert('Sorry, this JSON does not look like a journal story.\n\n'+problem+'\n\nPlease choose a story JSON file from this journal.'); return; }
+    const title=(typeof data.title==='string')?data.title:'';
+    /* Import brings in NEW stories. If a story with this title is already published,
+       stop and point the user to Open (editing an existing story lives there). */
+    if(getToken() && title.trim()){
+      try{
+        const idx=await ghGet('data/index.json'); const list= idx? (JSON.parse(idx.text)||[]) : [];
+        const norm=t=>(t||'').trim().toLowerCase();
+        const dup=list.find(x=> norm(x.title)===norm(title));
+        if(dup){
+          alert('A story named "'+title.trim()+'" already exists on the site.\n\nImport only adds new stories. To change this one, close this, use Open to load "'+(dup.title||title.trim())+'", edit it, then Publish.');
+          return;
+        }
+      }catch(err){ /* offline or no access: publish will still enforce uniqueness */ }
+    }
     const pages=data.pages.map(pg=>({ paper:(pg.paper==='dot'||pg.paper==='plain')?pg.paper:'grid', elements:Array.isArray(pg.elements)?pg.elements:[] }));
-    story={ id:(typeof data.id==='string'&&data.id)?data.id:null,
-            title:(typeof data.title==='string')?data.title:'',
+    story={ id:null, origId:null, /* always a new story; the filename is derived from the title at publish */
+            title:title,
             date:(typeof data.date==='string'&&data.date)?data.date:J.today(),
             thumb:(typeof data.thumb==='string')?data.thumb:'',
             pages:pages, current:0 };
-    if(story.id) story._loaded=true; /* keeps its id, so Publish updates the same story */
     deselect(); saveDraft(); renderAll();
-    showToast('Story imported. You can edit and publish it.');
+    showToast('Story imported. Edit and Publish to add it to the site.');
   };
   reader.readAsText(f);
 };
@@ -508,7 +524,7 @@ async function loadStories(){
       const main=document.createElement('div'); main.className='main';
       main.innerHTML=(p.thumb?'<img src="'+p.thumb+'">':'<div class="ph">✿</div>')+'<div style="min-width:0"><div class="tname">'+J.escapeHtml(p.title||'Untitled')+'</div><div style="font-size:11px;color:var(--lav-deep);font-weight:700;">'+J.escapeHtml(J.formatDate(p.date))+'</div></div>';
       main.onclick=async()=>{ try{ showToast('Loading story...',0); const pr=await ghGet('data/posts/'+p.id+'.json'); const post=JSON.parse(pr.text);
-        story={id:post.id, title:post.title||'', date:post.date||J.today(), thumb:p.thumb||'', pages:(post.pages&&post.pages.length)?post.pages:[blankPage()], current:0, _loaded:true};
+        story={id:post.id, origId:post.id, title:post.title||'', date:post.date||J.today(), thumb:(typeof post.thumb==='string'&&post.thumb)?post.thumb:(p.thumb||''), pages:(post.pages&&post.pages.length)?post.pages:[blankPage()], current:0, _loaded:true};
         deselect(); openMask.classList.remove('open'); renderAll(); showToast('Loaded — edit and Publish to update'); }catch(err){ showToast('Could not open story'); } };
       const dl=document.createElement('button'); dl.className='dl'; dl.textContent='⇩'; dl.title='Download JSON backup';
       dl.onclick=async()=>{ try{ showToast('Preparing download...',0);
@@ -537,27 +553,37 @@ document.getElementById('publishBtn').onclick=async()=>{
   if(!getToken()){ showToast('Add your publishing key first (⚙)'); document.getElementById('settingsBtn').click(); return; }
   if(!story.title.trim()){ showToast('Give the story a title first'); storyTitle.focus(); return; }
   if(!story.thumb && !confirm('No cover photo set — the homepage card will show a placeholder. Publish anyway?')) return;
-  if(!story.id) story.id=J.slugify(story.title);
+  /* origId = the file this session is bound to in GitHub; null for a brand-new story */
+  const origId = story._loaded ? (story.origId!=null ? story.origId : story.id) : null;
   showToast('Publishing...',0);
   try{
     const idxExisting=await ghGet('data/index.json'); let list= idxExisting? (JSON.parse(idxExisting.text)||[]) : [];
-    const normTitle=t=>(t||'').trim().toLowerCase();
-    const conflict=list.some(x=> normTitle(x.title)===normTitle(story.title) && (!story._loaded || x.id!==story.id));
-    if(conflict){
+    const norm=t=>(t||'').trim().toLowerCase();
+    /* 1. Title must be unique across OTHER stories (case/space-insensitive) */
+    if(list.some(x=> norm(x.title)===norm(story.title) && x.id!==origId)){
       toast.classList.remove('show');
-      if(!story._loaded) story.id=null; /* re-slugify from the new title on the next publish */
       alert('A story with this title already exists.\n\nStory titles must be unique because they are used as the permanent filename for the journal.\n\nPlease choose a different title.\n\nExamples:\n\u2022 Goa 2026\n\u2022 Goa with Friends\n\u2022 Goa - June Trip');
       storyTitle.focus();
       return;
     }
-    if(!story._loaded && list.some(x=>x.id===story.id)){ let base=story.id,n=2; while(list.some(x=>x.id===base+'-'+n)) n++; story.id=base+'-'+n; }
-    const postPath='data/posts/'+story.id+'.json'; const existing=await ghGet(postPath);
-    const postJson=JSON.stringify({id:story.id,title:story.title,date:story.date,pages:story.pages});
+    /* 2. Derive the filename from the title; keep it unique against OTHER stories' files */
+    let newId=J.slugify(story.title); { let base=newId,n=2; while(list.some(x=> x.id===newId && x.id!==origId)){ newId=base+'-'+n; n++; } }
+    /* 3. Write the post file under the (possibly new) name */
+    const postPath='data/posts/'+newId+'.json'; const existing=await ghGet(postPath);
+    const postJson=JSON.stringify({id:newId,title:story.title,date:story.date,thumb:story.thumb||'',pages:story.pages});
     await ghPut(postPath, postJson, (existing?'Update':'Add')+' story: '+story.title, existing?existing.sha:null);
-    list=list.filter(x=>x.id!==story.id); list.unshift({id:story.id, title:story.title, date:story.date, thumb:story.thumb||''});
+    /* 4. If the title (and therefore the filename) changed, delete the old file — a rename */
+    if(origId && origId!==newId){
+      try{ const old=await ghGet('data/posts/'+origId+'.json'); if(old) await ghDelete('data/posts/'+origId+'.json', old.sha, 'Rename story file: '+origId+'.json -> '+newId+'.json'); }catch(e){}
+    }
+    /* 5. Rewrite the index: drop both the old and new ids, then add one fresh entry */
+    list=list.filter(x=> x.id!==newId && x.id!==origId);
+    list.unshift({id:newId, title:story.title, date:story.date, thumb:story.thumb||''});
     list.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
     await ghPut('data/index.json', JSON.stringify(list), 'Update index: '+story.title, idxExisting?idxExisting.sha:null);
-    story._loaded=true; saveDraft(); showToast('Published! Live on the site in about a minute.',4000);
+    /* 6. This session is now bound to the new file */
+    story.id=newId; story.origId=newId; story._loaded=true; saveDraft();
+    showToast('Published! Live on the site in about a minute.',4000);
   }catch(e){ showToast(e.message, 6000); }
 };
 
