@@ -86,6 +86,7 @@
   .story-list .ph{width:46px;height:36px;border-radius:6px;background:var(--soft);display:flex;align-items:center;justify-content:center;color:var(--lilac);flex:none;}
   .story-list .tname{font-family:var(--hand); font-size:20px; line-height:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   .story-list .trash{width:34px;height:34px;border-radius:9px;border:1px solid var(--paper-edge);background:#fff;color:#c0617d;cursor:pointer;font-size:15px;flex:none;}
+  .story-list .dl{width:34px;height:34px;border-radius:9px;border:1px solid var(--paper-edge);background:#fff;color:var(--lav-deep);cursor:pointer;font-size:15px;flex:none;}
 
   .sheet-mask{position:fixed; inset:0; background:rgba(75,67,97,.3); z-index:300; display:none; align-items:flex-end; justify-content:center;}
   .sheet-mask.open{display:flex;}
@@ -126,6 +127,8 @@
         <div class="pt" data-paper="plain"></div>
       </div>
       <button class="btn ghost" id="newBtn">✦ New</button>
+      <button class="btn ghost" id="importBtn">⇪ Import JSON</button>
+      <input type="file" id="importFile" accept=".json,application/json" hidden>
       <button class="btn ghost" id="openBtn">📂 Open</button>
       <button class="btn ghost" id="settingsBtn">⚙</button>
       <button class="btn primary" id="publishBtn">▲ Publish</button>
@@ -189,7 +192,7 @@
 <div class="mask" id="openMask">
   <div class="modal">
     <h3>Your stories</h3>
-    <p>Tap a story to edit or extend it. Use the bin to delete it from the site.</p>
+    <p>Tap a story to edit or extend it. Use ⇩ to download a JSON backup, or the bin to delete it from the site.</p>
     <div class="story-list" id="storyList"><div style="color:var(--ink-soft);font-size:13px;">Loading...</div></div>
     <div class="row"><button class="btn ghost" id="closeOpen">Close</button></div>
   </div>
@@ -432,6 +435,51 @@ function openSheet(){
 
 /* ---------- new / settings ---------- */
 document.getElementById('newBtn').onclick=()=>{ if(confirm('Start a new blank story? Unpublished changes here will be cleared.')){ story=newStory(); deselect(); renderAll(); } };
+
+/* ---------- import JSON ---------- */
+const ELEMENT_TYPES=['text','photo','sticker','imgsticker','washi'];
+function validateStoryJson(data){
+  if(!data || typeof data!=='object' || Array.isArray(data)) return 'The file is not a story object.';
+  if(data.title!=null && typeof data.title!=='string') return 'The story title is invalid.';
+  if(!Array.isArray(data.pages) || data.pages.length===0) return 'The file has no pages, so it does not look like a journal story.';
+  for(let i=0;i<data.pages.length;i++){
+    const pg=data.pages[i];
+    if(!pg || typeof pg!=='object' || Array.isArray(pg)) return 'Page '+(i+1)+' is invalid.';
+    if(pg.elements!=null && !Array.isArray(pg.elements)) return 'Page '+(i+1)+' has an invalid elements list.';
+    const els=pg.elements||[];
+    for(let k=0;k<els.length;k++){
+      const el=els[k];
+      if(!el || typeof el!=='object' || Array.isArray(el)) return 'Page '+(i+1)+' contains an invalid element.';
+      if(ELEMENT_TYPES.indexOf(el.type)===-1) return 'Page '+(i+1)+' contains an unknown element type.';
+    }
+  }
+  return null;
+}
+const importFile=document.getElementById('importFile');
+document.getElementById('importBtn').onclick=()=>importFile.click();
+importFile.onchange=(e)=>{
+  const f=e.target.files[0]; importFile.value=''; if(!f) return;
+  if(!/\.json$/i.test(f.name)){ alert('Please choose a .json file.'); return; }
+  const reader=new FileReader();
+  reader.onerror=()=>showToast('Could not read the file');
+  reader.onload=()=>{
+    let data=null;
+    try{ data=JSON.parse(reader.result); }
+    catch(err){ alert('Sorry, that file is not valid JSON, so it cannot be imported.\n\nPlease choose a story JSON file from this journal.'); return; }
+    const problem=validateStoryJson(data);
+    if(problem){ alert('Sorry, this JSON does not look like a journal story.\n\n'+problem+'\n\nPlease choose a story JSON file from this journal.'); return; }
+    const pages=data.pages.map(pg=>({ paper:(pg.paper==='dot'||pg.paper==='plain')?pg.paper:'grid', elements:Array.isArray(pg.elements)?pg.elements:[] }));
+    story={ id:(typeof data.id==='string'&&data.id)?data.id:null,
+            title:(typeof data.title==='string')?data.title:'',
+            date:(typeof data.date==='string'&&data.date)?data.date:J.today(),
+            thumb:(typeof data.thumb==='string')?data.thumb:'',
+            pages:pages, current:0 };
+    if(story.id) story._loaded=true; /* keeps its id, so Publish updates the same story */
+    deselect(); saveDraft(); renderAll();
+    showToast('Story imported. You can edit and publish it.');
+  };
+  reader.readAsText(f);
+};
 const settingsMask=document.getElementById('settingsMask');
 document.getElementById('settingsBtn').onclick=()=>{ document.getElementById('tokenInput').value=getToken(); settingsMask.classList.add('open'); };
 document.getElementById('closeSettings').onclick=()=>settingsMask.classList.remove('open');
@@ -462,6 +510,15 @@ async function loadStories(){
       main.onclick=async()=>{ try{ showToast('Loading story...',0); const pr=await ghGet('data/posts/'+p.id+'.json'); const post=JSON.parse(pr.text);
         story={id:post.id, title:post.title||'', date:post.date||J.today(), thumb:p.thumb||'', pages:(post.pages&&post.pages.length)?post.pages:[blankPage()], current:0, _loaded:true};
         deselect(); openMask.classList.remove('open'); renderAll(); showToast('Loaded — edit and Publish to update'); }catch(err){ showToast('Could not open story'); } };
+      const dl=document.createElement('button'); dl.className='dl'; dl.textContent='⇩'; dl.title='Download JSON backup';
+      dl.onclick=async()=>{ try{ showToast('Preparing download...',0);
+          const pr=await ghGet('data/posts/'+p.id+'.json'); if(!pr){ showToast('Story file not found'); return; }
+          const blob=new Blob([pr.text],{type:'application/json'});
+          const url=URL.createObjectURL(blob);
+          const a=document.createElement('a'); a.href=url; a.download=p.id+'.json'; document.body.appendChild(a); a.click(); a.remove();
+          setTimeout(()=>URL.revokeObjectURL(url),4000);
+          showToast('Downloaded '+p.id+'.json');
+        }catch(err){ showToast(err.message,5000); } };
       const tr=document.createElement('button'); tr.className='trash'; tr.textContent='🗑'; tr.title='Delete story';
       tr.onclick=async()=>{ if(!confirm('Delete "'+(p.title||'this story')+'" from the site permanently?')) return;
         showToast('Deleting...',0);
@@ -470,7 +527,7 @@ async function loadStories(){
           await ghPut('data/index.json', JSON.stringify(list2), 'Remove from index: '+(p.title||p.id), idx2?idx2.sha:null);
           showToast('Deleted'); loadStories();
         }catch(err){ showToast(err.message,5000); } };
-      it.appendChild(main); it.appendChild(tr); storyList.appendChild(it); });
+      it.appendChild(main); it.appendChild(dl); it.appendChild(tr); storyList.appendChild(it); });
   }catch(e){ storyList.innerHTML='<div style="color:#c0617d;font-size:13px;">'+J.escapeHtml(e.message)+'</div>'; }
 }
 document.getElementById('openBtn').onclick=()=>{ if(!getToken()){ showToast('Add your publishing key first (⚙)'); document.getElementById('settingsBtn').click(); return; } openMask.classList.add('open'); loadStories(); };
@@ -484,6 +541,15 @@ document.getElementById('publishBtn').onclick=async()=>{
   showToast('Publishing...',0);
   try{
     const idxExisting=await ghGet('data/index.json'); let list= idxExisting? (JSON.parse(idxExisting.text)||[]) : [];
+    const normTitle=t=>(t||'').trim().toLowerCase();
+    const conflict=list.some(x=> normTitle(x.title)===normTitle(story.title) && (!story._loaded || x.id!==story.id));
+    if(conflict){
+      toast.classList.remove('show');
+      if(!story._loaded) story.id=null; /* re-slugify from the new title on the next publish */
+      alert('A story with this title already exists.\n\nStory titles must be unique because they are used as the permanent filename for the journal.\n\nPlease choose a different title.\n\nExamples:\n\u2022 Goa 2026\n\u2022 Goa with Friends\n\u2022 Goa - June Trip');
+      storyTitle.focus();
+      return;
+    }
     if(!story._loaded && list.some(x=>x.id===story.id)){ let base=story.id,n=2; while(list.some(x=>x.id===base+'-'+n)) n++; story.id=base+'-'+n; }
     const postPath='data/posts/'+story.id+'.json'; const existing=await ghGet(postPath);
     const postJson=JSON.stringify({id:story.id,title:story.title,date:story.date,pages:story.pages});
