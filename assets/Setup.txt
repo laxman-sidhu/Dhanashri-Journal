@@ -12,6 +12,7 @@ in the private editor (admin.html) and published straight to this repo via the G
 2. Upload all these files keeping the folder structure:
    index.html, story.html, admin.html, README.md
    assets/style.css, assets/core.js
+   assets/backgrounds/  (the decorative page-background images: bg01.jpg ... bg10.jpg)
    data/index.json   (and an empty data/posts/ folder is created automatically on first publish)
 3. Repo > Settings > Pages > Source: "Deploy from a branch", branch `main`, folder `/ (root)`. Save.
    Wait ~1 minute for the first build.
@@ -32,3 +33,26 @@ The editor commits these files through the GitHub API when you press Publish.
 - The token lives only in your browser (localStorage). It is never written into any file.
 - If the token leaks, revoke it in GitHub settings and make a new one.
 - To rename the repo/user, edit CONFIG at the top of assets/core.js.
+
+## Page backgrounds
+- In the editor, click "Background" to open the centered picker and choose a per-page
+  background: grid, dots or plain paper, or one of the 21 decorative images.
+- The images live in assets/backgrounds/. A page only saves its short key (e.g. "bg14"), so
+  story files stay small and each background loads once and is then cached.
+- To add more backgrounds later: drop the new compressed image into assets/backgrounds/ and
+  add one line to the BACKGROUNDS list near the top of assets/core.js (key, label, file path,
+  and a small inline thumbnail for the picker preview).
+
+## Drafts
+- "Save draft" downloads the current story as a JSON file without publishing it. Bring it back
+  any time with "Import JSON" to keep editing, then Publish when it is ready.
+- The editor also autosaves the in-progress story to this browser, so a refresh will not lose
+  work; "Save draft" is the portable backup you can keep or move between devices.
+
+## Fonts
+- The handwritten and display fonts come from Google Fonts.
+- The classic fonts (Times New Roman, Cambria, Book Antiqua, Bookman Old Style, Calibri,
+  Franklin Gothic Book, Microsoft Sans Serif, Monotype Corsiva, MV Boli, Chaparral Pro Light,
+  Adobe Arabic, Segoe Fluent Icons) are used by name, not bundled. They render exactly on a
+  device that has the font installed (most are standard on Windows) and fall back to a similar
+  font elsewhere.

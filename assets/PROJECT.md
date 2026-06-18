@@ -32,16 +32,26 @@ It has two faces:
 
 ### For the editor (private)
 - A freeform canvas, like a real scrapbook page, where elements can be placed anywhere.
-- **Text** boxes with rich formatting: eight fonts (cute, handwritten, elegant, serif,
-  clean), size, bold, italic, underline, alignment, preset colors and any custom color.
+- **Text** boxes with rich formatting: twenty fonts (the original handwritten, elegant,
+  serif and clean web fonts, plus classic system and Adobe families such as Times New Roman,
+  Cambria, Book Antiqua, Bookman Old Style, Calibri, Franklin Gothic Book, Microsoft Sans
+  Serif, Monotype Corsiva, MV Boli, Chaparral Pro Light, Adobe Arabic and Segoe Fluent
+  Icons), size, bold, italic, underline, four alignments including justify, a text colour
+  and a separate text-box fill colour, and free rotation (tilt) in fine steps just like
+  photos. The font menu previews each name in its own typeface so the right one is easy to pick.
 - **Photos**, which can be moved, resized, rotated in fine steps, cropped, and captioned.
 - **Stickers**: a built-in emoji library, plus the ability to paste any emoji/symbol, plus
   uploading your own image as a sticker (PNG transparency preserved).
 - **Washi tape** strips in several pastel colors.
 - **Multiple pages per story**, so a single trip can span several spreads.
-- Three paper styles per page: grid, dots, or plain.
+- **Page backgrounds**: three plain papers (grid, dots, plain) plus a library of 21 decorative
+  scrapbook backgrounds (vintage travel, mountain scrapbook, lakeside and beach scenes, cute
+  notepads, gingham, a travel planner template, lined paper, and more), chosen per page from a
+  centered picker.
 - A **cover photo** picker used for the homepage card.
 - **Autosave** of work-in-progress to the browser so nothing is lost on refresh.
+- **Save draft** to download the current story as a JSON file at any point without publishing;
+  it can be brought back later with **Import JSON** to keep editing.
 - **Publish** to put a story live, **Open** to load any published story to edit or extend,
   and **Delete** to remove a story from the site.
 
@@ -95,7 +105,9 @@ Dhanashri-Journal/
   admin.html          Private editor + publishing logic
   assets/
     style.css         All shared styling (the lavender theme, layout, responsiveness)
-    core.js           Shared config, helpers, image compression, read-only renderer
+    core.js           Shared config, fonts, background registry, image compression, renderer
+    backgrounds/
+      bg01.jpg ...     The decorative page-background images (compressed, lazy-loaded)
   data/
     index.json        Array listing every story (id, title, date, thumbnail)
     posts/
@@ -139,25 +151,35 @@ without downloading every full story.
 Each entry in `elements` is one placed item. Every element has a position (`x`, `y`) in a
 fixed 760-pixel-wide design space, and type-specific fields:
 
-- `text` — `content`, `font`, `size`, `bold`, `italic`, `underline`, `align`, `color`, `w`
+- `text` — `content`, `font`, `size`, `bold`, `italic`, `underline`, `align` (left, center,
+  right or justify), `color`, `fill` (text-box background colour, empty for none), `w`, `rot`
 - `photo` — `src` (embedded compressed JPEG), `caption`, `w`, `rot`
 - `sticker` — `emoji`, `size`, `rot`
 - `imgsticker` — `src` (embedded PNG), `w`, `rot`
 - `washi` — `color`, `w`, `rot`
 
+A page's `paper` is either a built-in style (`grid`, `dot`, `plain`) or the key of a
+decorative background (for example `bg04`). Only the short key is stored; the matching
+image is fetched once from `assets/backgrounds/` and cached, so the story file itself stays
+tiny.
+
 Photos and stickers are stored **inline as data URLs**, so one story file is fully
 self-contained: there are no separate image files to track, and publishing or deleting a
-story is a single file operation.
+story is a single file operation. Decorative page backgrounds are the deliberate exception:
+they are shared, reusable site assets, so they live as files and are referenced by key.
 
 ---
 
 ## 7. How each part works
 
 **`assets/core.js`** is the shared brain. It holds the GitHub username/repo config, the font
-list, small helpers (id generation, date formatting, slugifying titles), the image
-compressor (resizes and re-encodes uploads so files stay small), the function that applies
-text styling, the read-only element renderer, the read-only page renderer, and UTF-8-safe
-base64 encode/decode used for the GitHub API.
+list (web fonts plus the named system/Adobe families), the registry of decorative page
+backgrounds (key, label, file path and a tiny inline preview), small helpers (id generation,
+date formatting, slugifying titles), the image compressor (resizes and re-encodes uploads so
+files stay small), the function that applies text styling (font, size, weight, alignment,
+colour and fill), the function that applies a page's background, the element rotation helper,
+the read-only element renderer, the read-only page renderer, and UTF-8-safe base64
+encode/decode used for the GitHub API.
 
 **`index.html`** fetches `data/index.json`, sorts by date, and renders a card per story. Pure
 read-only; it has no concept of saving.
@@ -191,6 +213,23 @@ inherent read-only safety for the public, since visitors only ever fetch static 
 **Images embedded in JSON.** Keeping photos as compressed data URLs makes each story one
 self-contained file. The alternative (separate image files) means juggling paths and extra
 commits. Uploads are shrunk on import (about 1100px wide, JPEG) to keep files reasonable.
+
+**Backgrounds as shared files, referenced by key.** Decorative page backgrounds are the one
+deliberate exception to the embed-everything rule. A full-page background reused across many
+pages would bloat every story file if embedded, so instead each background is compressed once
+into `assets/backgrounds/`, and a page stores only a short key like `bg04`. The browser fetches
+each background at most once and caches it, and only when a page actually uses it, which keeps
+both the story files and the initial page load light. A tiny inline thumbnail of each
+background is kept in `core.js` purely so the editor's picker can show previews instantly with
+no extra requests.
+
+**Fonts named, not bundled.** The original handwritten and display fonts are free web fonts
+loaded from Google Fonts. The added classic families (Times New Roman, Cambria, Book Antiqua,
+Bookman Old Style, Calibri, Franklin Gothic Book, Microsoft Sans Serif, Monotype Corsiva, MV
+Boli, Chaparral Pro Light, Adobe Arabic, Segoe Fluent Icons) are proprietary system and Adobe
+fonts, so they are referenced by name with a sensible fallback rather than shipped as files.
+On a device that has a given font installed it renders exactly; otherwise it falls back to the
+generic family. This keeps the site fast and avoids bundling licensed font files.
 
 **Token stored only in the browser.** The publishing key is a GitHub fine-grained token,
 scoped to this one repo with Contents read/write. It is typed into the editor once and saved
@@ -247,6 +286,10 @@ do client-side publishing to a static host.
 
 - Text styling is per text box rather than per word; the scrapbook approach is to use several
   boxes, which is also how the look is normally achieved.
+- The classic system and Adobe fonts render as the exact named font only on devices that have
+  it installed (for example, most Windows machines have Calibri, Cambria, Times New Roman and
+  MV Boli); on other devices that text falls back to a similar generic family. The owner's own
+  machine is what matters for authoring, so this is rarely noticeable in practice.
 - A GitHub free-plan Pages repo is public, so the editor URL is reachable; security comes from
   the token, not URL secrecy.
 - Publishing assumes a single editor; there is no multi-user conflict handling.

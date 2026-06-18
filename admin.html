@@ -101,6 +101,20 @@
   .washirow{display:flex; gap:8px; flex-wrap:wrap;}
   .washirow button{width:64px;height:26px;border-radius:3px;border:none;cursor:pointer; box-shadow:0 2px 6px rgba(75,67,97,.12);}
 
+  .fmtbar .fbl{font-size:11px; font-weight:700; color:var(--ink-soft); letter-spacing:.3px;}
+  /* background picker */
+  .bggrid{display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-top:4px;}
+  .bgitem{border:none; background:transparent; cursor:pointer; padding:0; display:flex; flex-direction:column; align-items:center; gap:5px;}
+  .bgsw{width:100%; aspect-ratio:3/4; border-radius:11px; background-size:cover; background-position:center top;
+    background-color:var(--paper); border:1px solid var(--paper-edge); box-shadow:0 2px 8px rgba(75,67,97,.1);}
+  .bgitem.sel .bgsw{outline:3px solid var(--lav-deep); outline-offset:2px;}
+  .bgitem:hover .bgsw{transform:translateY(-2px); box-shadow:0 6px 16px var(--shadow);}
+  .bglbl{font-size:11px; font-weight:700; color:var(--ink); text-align:center; line-height:1.12;}
+  .bgsw.bg-grid{background-image:linear-gradient(#e8e1f6 1px,transparent 1px),linear-gradient(90deg,#e8e1f6 1px,transparent 1px); background-size:10px 10px;}
+  .bgsw.bg-dot{background-image:radial-gradient(#cfc6ea 1.5px,transparent 1.5px); background-size:10px 10px;}
+  .bgsw.bg-plain{background-image:none;}
+  @media(max-width:600px){ .bggrid{grid-template-columns:repeat(3,1fr); gap:10px;} }
+
   /* crop */
   #cropArea{position:relative; touch-action:none; user-select:none; margin:0 auto; max-width:100%; line-height:0;}
   #cropImg{display:block; width:100%; pointer-events:none; border-radius:6px;}
@@ -121,14 +135,11 @@
     <input type="date" class="sdate" id="storyDate">
     <div class="spacer"></div>
     <div class="actions">
-      <div class="paper-toggle" title="Paper style for this page">
-        <div class="pt sel" data-paper="grid" style="background-image:linear-gradient(#e8e1f6 1px,transparent 1px),linear-gradient(90deg,#e8e1f6 1px,transparent 1px);background-size:7px 7px;"></div>
-        <div class="pt" data-paper="dot" style="background-image:radial-gradient(#cfc6ea 1.4px,transparent 1.4px);background-size:7px 7px;"></div>
-        <div class="pt" data-paper="plain"></div>
-      </div>
+      <button class="btn ghost" id="bgBtn" title="Page background for this page">🎨 Background</button>
       <button class="btn ghost" id="newBtn">✦ New</button>
       <button class="btn ghost" id="importBtn">⇪ Import JSON</button>
       <input type="file" id="importFile" accept=".json,application/json" hidden>
+      <button class="btn ghost" id="saveDraftBtn" title="Download this story as a JSON draft you can re-import later">💾 Save draft</button>
       <button class="btn ghost" id="openBtn">📂 Open</button>
       <button class="btn ghost" id="settingsBtn">⚙</button>
       <button class="btn primary" id="publishBtn">▲ Publish</button>
@@ -153,17 +164,29 @@
     <button class="fb" id="fItalic" title="Italic"><i>I</i></button>
     <button class="fb" id="fUnder" title="Underline"><u>U</u></button>
     <div class="sep"></div>
-    <button class="fb" id="alL" title="Left">L</button>
-    <button class="fb" id="alC" title="Centre">C</button>
-    <button class="fb" id="alR" title="Right">R</button>
+    <button class="fb" id="alL" title="Align left">L</button>
+    <button class="fb" id="alC" title="Align centre">C</button>
+    <button class="fb" id="alR" title="Align right">R</button>
+    <button class="fb" id="alJ" title="Justify">J</button>
     <div class="sep"></div>
+    <span class="fbl">Text</span>
     <span class="sw" data-c="#4b4361" style="background:#4b4361"></span>
     <span class="sw" data-c="#8367c7" style="background:#8367c7"></span>
     <span class="sw" data-c="#c77fb3" style="background:#c77fb3"></span>
     <span class="sw" data-c="#6c91c2" style="background:#6c91c2"></span>
     <span class="sw" data-c="#5a9e86" style="background:#5a9e86"></span>
     <span class="sw" data-c="#d59a55" style="background:#d59a55"></span>
-    <input type="color" id="fColor" value="#4b4361" title="Custom colour">
+    <input type="color" id="fColor" value="#4b4361" title="Custom text colour">
+    <div class="sep"></div>
+    <span class="fbl">Fill</span>
+    <button class="fb" id="fFillClear" title="No fill">⌀</button>
+    <span class="sw" data-fill="#fff3c4" style="background:#fff3c4"></span>
+    <span class="sw" data-fill="#ffd9e6" style="background:#ffd9e6"></span>
+    <span class="sw" data-fill="#e3d9ff" style="background:#e3d9ff"></span>
+    <span class="sw" data-fill="#d6ecff" style="background:#d6ecff"></span>
+    <span class="sw" data-fill="#d9f2e4" style="background:#d9f2e4"></span>
+    <span class="sw" data-fill="#ffffff" style="background:#ffffff"></span>
+    <input type="color" id="fFillColor" value="#fff3c4" title="Custom fill colour">
   </div>
 
   <div class="stage" id="stage">
@@ -204,6 +227,13 @@
     <p>Drag the box to choose the area, drag the corner to resize, then Apply.</p>
     <div id="cropArea"><img id="cropImg" alt=""><div id="cropBox"><div id="cropHandle"></div></div></div>
     <div class="row"><button class="btn ghost" id="cropCancel">Cancel</button><button class="btn primary" id="cropApply">Apply</button></div>
+  </div>
+</div>
+
+<div class="mask" id="bgMask">
+  <div class="modal wide">
+    <div id="bgBody"></div>
+    <div class="row"><button class="btn ghost" id="closeBg">Close</button></div>
   </div>
 </div>
 
@@ -253,18 +283,19 @@ function fitScale(){ const avail=stage.clientWidth-28; scale=Math.min(1, avail/P
 window.addEventListener('resize', fitScale);
 
 /* ---------- format bar ---------- */
-(function(){ const f=document.getElementById('fFont'); Object.keys(J.FONTS).forEach(k=>{ const o=document.createElement('option'); o.value=k; o.textContent=J.FONTS[k].label; f.appendChild(o); }); })();
+(function(){ const f=document.getElementById('fFont'); Object.keys(J.FONTS).forEach(k=>{ const o=document.createElement('option'); o.value=k; o.textContent=J.FONTS[k].label; o.style.fontFamily=J.FONTS[k].css; o.style.fontSize='16px'; f.appendChild(o); }); f.style.fontFamily=J.FONTS.gaegu.css; })();
 function toHex(c){ try{ const ctx=document.createElement('canvas').getContext('2d'); ctx.fillStyle='#000'; ctx.fillStyle=c; return ctx.fillStyle; }catch(e){ return '#4b4361'; } }
-function setAlign(a){ ['alL','alC','alR'].forEach(id=>document.getElementById(id).classList.remove('active')); document.getElementById(a==='center'?'alC':a==='right'?'alR':'alL').classList.add('active'); }
+function setAlign(a){ ['alL','alC','alR','alJ'].forEach(id=>document.getElementById(id).classList.remove('active')); document.getElementById(a==='center'?'alC':a==='right'?'alR':a==='justify'?'alJ':'alL').classList.add('active'); }
 function showFmt(){ fmtbar.style.display='flex';
-  document.getElementById('fFont').value=selData.font||'gaegu'; document.getElementById('szVal').textContent=(selData.size||20);
+  const ff=document.getElementById('fFont'); ff.value=selData.font||'gaegu'; ff.style.fontFamily=(J.FONTS[ff.value]||J.FONTS.gaegu).css; document.getElementById('szVal').textContent=(selData.size||20);
   document.getElementById('fBold').classList.toggle('active', !!selData.bold);
   document.getElementById('fItalic').classList.toggle('active', !!selData.italic);
   document.getElementById('fUnder').classList.toggle('active', !!selData.underline);
-  setAlign(selData.align||'left'); document.getElementById('fColor').value=toHex(selData.color||'#4b4361'); fitScale(); }
+  setAlign(selData.align||'left'); document.getElementById('fColor').value=toHex(selData.color||'#4b4361');
+  document.getElementById('fFillColor').value=toHex(selData.fill||'#fff3c4'); fitScale(); }
 function hideFmt(){ fmtbar.style.display='none'; fitScale(); }
 function applyToSel(){ if(!selNode||!selData||selData.type!=='text') return; J.applyTextStyle(selNode.querySelector('.text-body'), selData); saveDraft(); }
-document.getElementById('fFont').onchange=function(){ if(selData){ selData.font=this.value; applyToSel(); } };
+document.getElementById('fFont').onchange=function(){ this.style.fontFamily=(J.FONTS[this.value]||J.FONTS.gaegu).css; if(selData){ selData.font=this.value; applyToSel(); } };
 document.getElementById('szMinus').onclick=()=>{ if(!selData) return; selData.size=Math.max(12,(selData.size||20)-2); document.getElementById('szVal').textContent=selData.size; applyToSel(); };
 document.getElementById('szPlus').onclick=()=>{ if(!selData) return; selData.size=Math.min(80,(selData.size||20)+2); document.getElementById('szVal').textContent=selData.size; applyToSel(); };
 document.getElementById('fBold').onclick=function(){ if(!selData) return; selData.bold=!selData.bold; this.classList.toggle('active',selData.bold); applyToSel(); };
@@ -273,8 +304,12 @@ document.getElementById('fUnder').onclick=function(){ if(!selData) return; selDa
 document.getElementById('alL').onclick=()=>{ if(!selData) return; selData.align='left'; setAlign('left'); applyToSel(); };
 document.getElementById('alC').onclick=()=>{ if(!selData) return; selData.align='center'; setAlign('center'); applyToSel(); };
 document.getElementById('alR').onclick=()=>{ if(!selData) return; selData.align='right'; setAlign('right'); applyToSel(); };
-document.querySelectorAll('.fmtbar .sw').forEach(sw=>{ sw.onclick=()=>{ if(!selData) return; selData.color=sw.dataset.c; document.getElementById('fColor').value=toHex(sw.dataset.c); applyToSel(); }; });
+document.getElementById('alJ').onclick=()=>{ if(!selData) return; selData.align='justify'; setAlign('justify'); applyToSel(); };
+document.querySelectorAll('.fmtbar .sw[data-c]').forEach(sw=>{ sw.onclick=()=>{ if(!selData) return; selData.color=sw.dataset.c; document.getElementById('fColor').value=toHex(sw.dataset.c); applyToSel(); }; });
 document.getElementById('fColor').oninput=function(){ if(!selData) return; selData.color=this.value; applyToSel(); };
+document.querySelectorAll('.fmtbar .sw[data-fill]').forEach(sw=>{ sw.onclick=()=>{ if(!selData) return; selData.fill=sw.dataset.fill; document.getElementById('fFillColor').value=toHex(sw.dataset.fill); applyToSel(); }; });
+document.getElementById('fFillColor').oninput=function(){ if(!selData) return; selData.fill=this.value; applyToSel(); };
+document.getElementById('fFillClear').onclick=()=>{ if(!selData) return; selData.fill=''; applyToSel(); };
 
 /* ---------- render ---------- */
 function renderTabs(){
@@ -291,8 +326,7 @@ function renderAll(){
   renderTabs();
   storyTitle.value=story.title||''; storyDate.value=story.date||J.today();
   coverPrev.innerHTML = story.thumb ? '<img src="'+story.thumb+'" style="width:100%;height:100%;object-fit:cover;">' : '✿';
-  const pg=curPage(); page.className='page '+(pg.paper||'grid');
-  document.querySelectorAll('.paper-toggle .pt').forEach(p=>p.classList.toggle('sel', p.dataset.paper===(pg.paper||'grid')));
+  const pg=curPage(); page.className='page'; J.applyPaper(page, pg.paper);
   page.innerHTML='';
   pg.elements.forEach(d=> page.appendChild(buildEl(d, pg)));
   page.onpointerdown=(e)=>{ if(e.target===page) deselect(); };
@@ -309,7 +343,7 @@ function buildEl(d, pg){
   if(d.type==='text'){
     const b=document.createElement('div'); b.className='text-body'; b.contentEditable='true'; b.innerText=d.content||''; J.applyTextStyle(b,d);
     b.addEventListener('input',()=>{ d.content=b.innerText; saveDraft(); });
-    b.addEventListener('pointerdown',e=>{ select(el); e.stopPropagation(); }); el.appendChild(b);
+    b.addEventListener('pointerdown',e=>{ select(el); e.stopPropagation(); }); el.appendChild(b); applyRot(el,d);
   } else if(d.type==='photo'){
     const img=document.createElement('img'); img.src=d.src; img.draggable=false; el.appendChild(img);
     const cap=document.createElement('div'); cap.className='cap'; cap.contentEditable='true'; cap.innerText=d.caption||'';
@@ -327,7 +361,7 @@ function buildEl(d, pg){
   const ctrl=document.createElement('div'); ctrl.className='ctrl';
   if(d.type==='photo'){ const crop=document.createElement('div'); crop.className='dot'; crop.textContent='✂'; crop.title='crop';
     crop.onpointerdown=(e)=>{ e.stopPropagation(); openCrop(d); }; ctrl.appendChild(crop); }
-  if(d.type!=='text'){
+  {
     const rl=document.createElement('div'); rl.className='dot'; rl.textContent='↺'; rl.title='rotate left';
     rl.onpointerdown=(e)=>{ e.stopPropagation(); d.rot=((d.rot||0)-5); applyRot(el,d); saveDraft(); }; ctrl.appendChild(rl);
     const rr=document.createElement('div'); rr.className='dot'; rr.textContent='↻'; rr.title='rotate right';
@@ -366,7 +400,7 @@ function makeResizable(el, handle, d){
 function selectLast(){ const nodes=page.querySelectorAll('.el'); const last=nodes[nodes.length-1]; if(last) select(last); return last; }
 
 /* ---------- add elements ---------- */
-document.getElementById('addText').onclick=()=>{ curPage().elements.push({id:J.uid(),type:'text',x:120,y:280,w:260,content:'',font:'gaegu',size:20,bold:false,italic:false,underline:false,align:'left',color:'#4b4361'}); renderAll();
+document.getElementById('addText').onclick=()=>{ curPage().elements.push({id:J.uid(),type:'text',x:120,y:280,w:260,content:'',font:'gaegu',size:20,bold:false,italic:false,underline:false,align:'left',color:'#4b4361',fill:'',rot:0}); renderAll();
   setTimeout(()=>{ const last=selectLast(); if(last){ const b=last.querySelector('.text-body'); if(b) b.focus(); } },40); };
 const photoFile=document.getElementById('photoFile');
 document.getElementById('addPhoto').onclick=()=>photoFile.click();
@@ -375,7 +409,33 @@ photoFile.onchange=async(e)=>{ const f=e.target.files[0]; if(!f) return; try{ co
 const coverFile=document.getElementById('coverFile');
 document.getElementById('coverBtn').onclick=()=>coverFile.click();
 coverFile.onchange=async(e)=>{ const f=e.target.files[0]; if(!f) return; try{ story.thumb=await J.compress(f,520,0.72); renderAll(); showToast('Cover set'); }catch(err){ showToast('Could not load image'); } coverFile.value=''; };
-document.querySelectorAll('.paper-toggle .pt').forEach(p=>{ p.onclick=()=>{ curPage().paper=p.dataset.paper; deselect(); saveDraft(); renderAll(); }; });
+/* ---------- background picker ---------- */
+const bgMask=document.getElementById('bgMask'), bgBody=document.getElementById('bgBody');
+document.getElementById('bgBtn').onclick=openBgSheet;
+document.getElementById('closeBg').onclick=()=>bgMask.classList.remove('open');
+bgMask.onclick=(e)=>{ if(e.target===bgMask) bgMask.classList.remove('open'); };
+function setPaper(key){ curPage().paper=J.normalizePaper(key); deselect(); saveDraft(); renderAll(); bgMask.classList.remove('open'); }
+function makeBgItem(key,label,thumb,cur){
+  const it=document.createElement('button'); it.className='bgitem'+(key===cur?' sel':'');
+  const sw=document.createElement('div'); sw.className='bgsw bg-'+key;
+  if(thumb) sw.style.backgroundImage='url('+thumb+')';
+  it.appendChild(sw);
+  const t=document.createElement('div'); t.className='bglbl'; t.textContent=label; it.appendChild(t);
+  it.onclick=()=>setPaper(key); return it;
+}
+function openBgSheet(){
+  const cur=curPage().paper||'grid';
+  bgBody.innerHTML='<h3>Page background</h3>';
+  let c=document.createElement('div'); c.className='cat'; c.textContent='Plain paper'; bgBody.appendChild(c);
+  const g1=document.createElement('div'); g1.className='bggrid';
+  [['grid','Grid'],['dot','Dots'],['plain','Plain']].forEach(b=> g1.appendChild(makeBgItem(b[0],b[1],null,cur)));
+  bgBody.appendChild(g1);
+  c=document.createElement('div'); c.className='cat'; c.textContent='Decorative'; bgBody.appendChild(c);
+  const g2=document.createElement('div'); g2.className='bggrid';
+  J.BACKGROUNDS.forEach(b=> g2.appendChild(makeBgItem(b.key,b.label,b.thumb,cur)));
+  bgBody.appendChild(g2);
+  bgMask.classList.add('open');
+}
 storyTitle.addEventListener('input',()=>{ story.title=storyTitle.value; saveDraft(); });
 storyDate.addEventListener('input',()=>{ story.date=storyDate.value; saveDraft(); });
 
@@ -438,6 +498,21 @@ function openSheet(){
 /* ---------- new / settings ---------- */
 document.getElementById('newBtn').onclick=()=>{ if(confirm('Start a new blank story? Unpublished changes here will be cleared.')){ story=newStory(); deselect(); renderAll(); } };
 
+/* ---------- save draft (download JSON; re-open later with Import JSON) ---------- */
+document.getElementById('saveDraftBtn').onclick=()=>{
+  story.title=storyTitle.value; story.date=storyDate.value||J.today(); saveDraft();
+  const slug=J.slugify(story.title)||'untitled';
+  const payload={ id:story.id||null, title:story.title||'', date:story.date||J.today(), thumb:story.thumb||'', pages:story.pages||[] };
+  try{
+    const blob=new Blob([JSON.stringify(payload)],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a'); a.href=url; a.download=slug+'-draft.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),4000);
+    showToast('Draft saved. Re-open it later with Import JSON.',3200);
+  }catch(err){ showToast('Could not save the draft'); }
+};
+
 /* ---------- import JSON ---------- */
 const ELEMENT_TYPES=['text','photo','sticker','imgsticker','washi'];
 function validateStoryJson(data){
@@ -485,7 +560,7 @@ importFile.onchange=(e)=>{
         }
       }catch(err){ /* offline or no access: publish will still enforce uniqueness */ }
     }
-    const pages=data.pages.map(pg=>({ paper:(pg.paper==='dot'||pg.paper==='plain')?pg.paper:'grid', elements:Array.isArray(pg.elements)?pg.elements:[] }));
+    const pages=data.pages.map(pg=>({ paper:J.normalizePaper(pg.paper), elements:Array.isArray(pg.elements)?pg.elements:[] }));
     story={ id:null, origId:null, /* always a new story; the filename is derived from the title at publish */
             title:title,
             date:(typeof data.date==='string'&&data.date)?data.date:J.today(),
