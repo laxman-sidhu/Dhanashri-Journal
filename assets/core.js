@@ -18,6 +18,14 @@ window.JOURNAL = (function(){
     quicksand:{ css:"'Quicksand', sans-serif",   label:"Quicksand" },
     nunito:   { css:"'Nunito', sans-serif",      label:"Nunito" },
 
+    greatvibes:{ css:"'Great Vibes', cursive",          label:"Great Vibes" },
+    sacramento:{ css:"'Sacramento', cursive",           label:"Sacramento" },
+    satisfy:  { css:"'Satisfy', cursive",               label:"Satisfy" },
+    shadows:  { css:"'Shadows Into Light', cursive",    label:"Shadows Into Light" },
+    kalam:    { css:"'Kalam', cursive",                 label:"Kalam" },
+    amatic:   { css:"'Amatic SC', cursive",             label:"Amatic SC" },
+    cormorant:{ css:"'Cormorant Garamond', serif",      label:"Cormorant Garamond" },
+
     timesnr:  { css:"'Times New Roman', Times, serif",            label:"Times New Roman" },
     cambria:  { css:"'Cambria', Georgia, serif",                  label:"Cambria" },
     bookantiqua:{ css:"'Book Antiqua', Palatino, 'Palatino Linotype', serif", label:"Book Antiqua" },
@@ -62,6 +70,69 @@ window.JOURNAL = (function(){
   ];
   const BG_MAP = {}; BACKGROUNDS.forEach(b=> BG_MAP[b.key]=b);
   const BUILTIN_PAPERS = ['grid','dot','plain'];
+  /* ---- doodles ----
+     Decorative line-art (stars, sparkles, arrows, lines, flourishes) drawn as inline SVG.
+     Each shape paints with `currentColor`, so the element's CSS colour recolours it.
+     `ratio` is width/height, used to reserve the right height as the width is scaled.
+     Stored on an element as { type:'doodle', key, w, rot, color }. */
+  const S='stroke="currentColor" fill="none" stroke-width="@W" stroke-linecap="round" stroke-linejoin="round"';
+  const DOODLES = [
+    {key:"star",   label:"Star",        ratio:1,    w:64,  svg:'<svg viewBox="0 0 100 100"><path fill="currentColor" d="M50 5l12 30 32 2-25 21 8 31-27-17-27 17 8-31-25-21 32-2z"/></svg>'},
+    {key:"star_o", label:"Star outline",ratio:1,    w:64,  svg:'<svg viewBox="0 0 100 100"><path '+S+' d="M50 7l12 29 31 2-24 20 8 30-27-16-27 16 8-30-24-20 31-2z"/></svg>'},
+    {key:"sparkle",label:"Sparkle",     ratio:1,    w:60,  svg:'<svg viewBox="0 0 100 100"><path fill="currentColor" d="M50 4C54 34 66 46 96 50 66 54 54 66 50 96 46 66 34 54 4 50 34 46 46 34 50 4z"/></svg>'},
+    {key:"stars3", label:"Star trio",   ratio:1.35, w:84,  svg:'<svg viewBox="0 0 135 100"><path fill="currentColor" d="M38 8l8 19 21 1-16 13 5 20-18-11-18 11 5-20-16-13 21-1z"/><path fill="currentColor" d="M100 40l6 14 15 1-12 10 4 15-13-8-13 8 4-15-12-10 15-1z"/><path fill="currentColor" d="M24 64l4 10 11 1-9 7 3 11-9-6-9 6 3-11-9-7 11-1z"/></svg>'},
+    {key:"heart",  label:"Heart",       ratio:1.12, w:66,  svg:'<svg viewBox="0 0 100 90"><path '+S+' d="M50 80C18 58 8 40 8 26 8 14 18 8 28 8c8 0 16 5 22 14C56 13 64 8 72 8c10 0 20 6 20 18 0 14-10 32-42 54z"/></svg>'},
+    {key:"arrow_curl", label:"Curly arrow", ratio:1.7, w:150, svg:'<svg viewBox="0 0 170 100"><path '+S+' d="M14 70C30 28 74 18 100 42 118 56 110 82 90 76 78 72 84 58 96 62 116 67 134 60 150 48L162 39"/><path '+S+' d="M162 39L146.2 41.7M162 39L155 53.4"/></svg>'},
+    {key:"arrow_curl_dot", label:"Dotted curly arrow", ratio:1.7, w:150, svg:'<svg viewBox="0 0 170 100"><path '+S+' stroke-dasharray="1 12" d="M14 70C30 28 74 18 100 42 118 56 110 82 90 76 78 72 84 58 96 62 116 67 134 60 150 48L162 39"/><path '+S+' d="M162 39L146.2 41.7M162 39L155 53.4"/></svg>'},
+    {key:"arrow", label:"Arrow", ratio:3.33, w:170, svg:'<svg viewBox="0 0 200 60"><path '+S+' d="M10 30H176"/><path '+S+' d="M176 30L161.7 22.7M176 30L161.7 37.3"/></svg>'},
+    {key:"arrow_dot", label:"Dotted arrow", ratio:3.33, w:170, svg:'<svg viewBox="0 0 200 60"><path '+S+' stroke-dasharray="1 13" d="M10 30H174"/><path '+S+' d="M174 30L159.7 22.7M174 30L159.7 37.3"/></svg>'},
+    {key:"line",      label:"Line",         ratio:8,   w:180, svg:'<svg viewBox="0 0 200 24"><path '+S+' d="M8 12H192"/></svg>'},
+    {key:"line_dot",  label:"Dotted line",  ratio:8,   w:180, svg:'<svg viewBox="0 0 200 24"><path '+S+' stroke-dasharray="1 13" d="M8 12H192"/></svg>'},
+    {key:"swash",     label:"Swash",        ratio:4,   w:180, svg:'<svg viewBox="0 0 200 50"><path '+S+' d="M8 30C50 10 90 50 130 28 162 11 188 16 196 26"/></svg>'},
+    {key:"flourish",  label:"Corner curl",  ratio:1.5, w:110, svg:'<svg viewBox="0 0 120 80"><path '+S+' d="M12 70C12 30 32 12 78 14"/><path '+S+' d="M78 14l-14-6M78 14l-7 14"/></svg>'},
+    {key:"arrow_both", label:"Double arrow", ratio:3.33, w:170, svg:'<svg viewBox="0 0 200 60"><path '+S+' d="M28 30H172"/><path '+S+' d="M172 30L157.7 22.7M172 30L157.7 37.3M28 30L42.3 37.3M28 30L42.3 22.7"/></svg>'},
+    {key:"wave",      label:"Wavy line",     ratio:5,   w:180, svg:'<svg viewBox="0 0 200 40"><path '+S+' d="M6 20C26 4 46 36 66 20 86 4 106 36 126 20 146 4 166 36 186 20"/></svg>'},
+    {key:"double_line",label:"Double line",  ratio:6.7, w:180, svg:'<svg viewBox="0 0 200 30"><path '+S+' d="M8 10H192"/><path '+S+' d="M8 22H192"/></svg>'},
+    {key:"circle_o",  label:"Circle it",     ratio:1.25,w:120, svg:'<svg viewBox="0 0 120 96"><path '+S+' d="M60 9C92 9 112 26 112 48 112 70 92 87 60 87 28 87 8 70 8 48 8 26 28 9 60 9z"/></svg>'},
+    {key:"bracket",   label:"Bracket",       ratio:0.42,w:42,  svg:'<svg viewBox="0 0 42 100"><path '+S+' d="M31 6C17 6 19 44 9 50 19 56 17 94 31 94"/></svg>'},
+    {key:"x_spark",   label:"Twinkle",       ratio:1,   w:48,  svg:'<svg viewBox="0 0 50 50"><path '+S+' d="M25 6V20M25 30V44M6 25H20M30 25H44"/></svg>'},
+    {key:"dot",       label:"Dot",           ratio:1,   w:26,  svg:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="currentColor"/></svg>'},
+    {key:"wave_arrow", label:"Wave arrow", ratio:3.33, w:185, svg:'<svg viewBox="0 0 200 60"><path '+S+' d="M8 30C24 50 42 50 58 30 74 10 92 10 108 30 124 50 142 50 158 30L167.4 18.3"/><path '+S+' d="M167.4 18.3L152.8 24.9M167.4 18.3L164.2 34"/></svg>'},
+    {key:"wave_arrow_dot", label:"Dotted wave arrow", ratio:3.33, w:185, svg:'<svg viewBox="0 0 200 60"><path '+S+' stroke-dasharray="1 13" d="M8 30C24 50 42 50 58 30 74 10 92 10 108 30 124 50 142 50 158 30L167.4 18.3"/><path '+S+' d="M167.4 18.3L152.8 24.9M167.4 18.3L164.2 34"/></svg>'},
+    {key:"squiggle_arrow", label:"Squiggle arrow", ratio:3.39, w:185, svg:'<svg viewBox="0 0 190 56"><path '+S+' d="M8 28C16 42 28 42 36 28 44 14 56 14 64 28 72 42 84 42 92 28 100 14 112 14 120 28 128 42 140 42 148 28L155.4 15"/><path '+S+' d="M155.4 15L142 23.8M155.4 15L154.6 31"/></svg>'},
+    {key:"wave_arrow_long", label:"Long wave arrow", ratio:4.29, w:210, svg:'<svg viewBox="0 0 240 56"><path '+S+' d="M8 28C24 10 42 10 58 28 74 46 92 46 108 28 124 10 142 10 158 28 174 46 192 46 208 28L218 16.8"/><path '+S+' d="M218 16.8L203.1 22.6M218 16.8L214 32.3"/></svg>'},
+    {key:"wave_arrow_up", label:"Rising wave arrow", ratio:1.75, w:150, svg:'<svg viewBox="0 0 175 100"><path '+S+' d="M10 90C30 66 52 88 66 64 80 40 96 62 108 40 120 20 138 30 150 18L160.6 7.4"/><path '+S+' d="M160.6 7.4L145.4 12.3M160.6 7.4L155.7 22.6"/></svg>'},
+    {key:"zigzag",      label:"Zigzag line",   ratio:5,   w:185, svg:'<svg viewBox="0 0 200 40"><path '+S+' d="M8 20L36 8 64 32 92 8 120 32 148 8 176 32 192 22"/></svg>'},
+    {key:"zigzag_arrow", label:"Zigzag arrow", ratio:3.08, w:185, svg:'<svg viewBox="0 0 160 52"><path '+S+' d="M8 24L30 12 52 36 74 12 96 36 118 16L129.1 5.9"/><path '+S+' d="M129.1 5.9L113.7 10.1M129.1 5.9L123.4 20.9"/></svg>'},
+    {key:"asterisk",    label:"Asterisk",      ratio:1,   w:50,  svg:'<svg viewBox="0 0 50 50"><path '+S+' d="M7 25H43M13 11 37 39M37 11 13 39"/></svg>'},
+    {key:"dots3",       label:"Three dots",    ratio:3.3, w:80,  svg:'<svg viewBox="0 0 80 24"><circle cx="12" cy="12" r="6" fill="currentColor"/><circle cx="40" cy="12" r="6" fill="currentColor"/><circle cx="68" cy="12" r="6" fill="currentColor"/></svg>'},
+    {key:"check",       label:"Check",         ratio:1.2, w:54,  svg:'<svg viewBox="0 0 60 50"><path '+S+' d="M10 28L26 42 50 10"/></svg>'},
+    {key:"heart_fill",  label:"Filled heart",  ratio:1.11,w:60,  svg:'<svg viewBox="0 0 100 90"><path fill="currentColor" d="M50 82C16 58 8 40 8 26 8 13 19 7 30 7 39 7 46 12 50 20 54 12 61 7 70 7 81 7 92 13 92 26 92 40 84 58 50 82z"/></svg>'},
+    {key:"sun",         label:"Sun",           ratio:1,   w:54,  svg:'<svg viewBox="0 0 60 60"><circle cx="30" cy="30" r="10" fill="currentColor"/><path '+S+' d="M30 6V14M30 46V54M6 30H14M46 30H54M13 13 19 19M41 41 47 47M47 13 41 19M19 41 13 47"/></svg>'},
+    {key:"sprig",       label:"Leaf sprig",    ratio:0.75,w:50,  svg:'<svg viewBox="0 0 60 80"><path '+S+' d="M30 74C30 50 30 30 30 8"/><path '+S+' d="M30 50C20 47 14 39 16 29M30 50C40 47 46 39 44 29M30 34C22 31 17 24 18 15M30 34C38 31 43 24 42 15"/></svg>'},
+    {key:"plus",        label:"Plus",          ratio:1,   w:34,  svg:'<svg viewBox="0 0 40 40"><path '+S+' d="M20 8V32M8 20H32"/></svg>'},
+    {key:"ring",        label:"Ring",          ratio:1,   w:50,  svg:'<svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="17" '+S+'/></svg>'},
+    {key:"scribble",    label:"Scribble",      ratio:2.4, w:150, svg:'<svg viewBox="0 0 120 50"><path '+S+' d="M8 38C20 12 30 44 44 22 58 4 66 40 80 22 94 8 104 38 114 20"/></svg>'},
+    {key:"banner",      label:"Banner",        ratio:2.5, w:150, svg:'<svg viewBox="0 0 140 56"><path '+S+' d="M18 14H122L108 28 122 42H18L32 28z"/></svg>'},
+    {key:"flower",      label:"Flower",        ratio:1,   w:58,  svg:'<svg viewBox="0 0 60 60"><circle cx="30" cy="14" r="9" '+S+'/><circle cx="46" cy="26" r="9" '+S+'/><circle cx="40" cy="44" r="9" '+S+'/><circle cx="20" cy="44" r="9" '+S+'/><circle cx="14" cy="26" r="9" '+S+'/><circle cx="30" cy="30" r="5" fill="currentColor"/></svg>'},
+    {key:"cloud",       label:"Cloud",         ratio:1.68,w:90,  svg:'<svg viewBox="0 0 84 50"><path '+S+' d="M20 42C8 42 6 28 18 26 18 13 36 11 40 22 47 13 65 16 64 27 76 27 78 42 64 42z"/></svg>'},
+    {key:"pin",         label:"Location pin",  ratio:0.71,w:40,  svg:'<svg viewBox="0 0 40 56"><path '+S+' d="M20 52C20 52 33 33 33 20 33 12 27 6 20 6 13 6 7 12 7 20 7 33 20 52 20 52z"/><circle cx="20" cy="20" r="6" '+S+'/></svg>'}
+  ];
+  const DOODLES_MAP = {}; DOODLES.forEach(d=> DOODLES_MAP[d.key]=d);
+  /* build a doodle's final SVG with a chosen colour + stroke weight baked in
+     (baking, rather than CSS, so the PDF export renders colour and weight too) */
+  function doodleSVG(key, color, weight){ const dd=DOODLES_MAP[key]; if(!dd) return '';
+    const w=(weight==null?6:weight); return dd.svg.split('@W').join(w).split('currentColor').join(color||'#4b4361'); }
+
+  /* photo looks: card (default), plain, shadow, frame (custom bg), border. Applied as classes
+     so existing photos (no style) stay exactly as the card look. */
+  const PHOTO_FRAME_DEFAULT='#efe9fb';
+  function applyPhotoStyle(el,d){
+    ['card','plain','shadow','frame','border'].forEach(s=>el.classList.remove('style-'+s));
+    const st=d.style||'card'; el.classList.add('style-'+st);
+    if(d.noCap) el.classList.add('nocap'); else el.classList.remove('nocap');
+    el.style.background=(st==='frame')?(d.frameColor||PHOTO_FRAME_DEFAULT):'';
+  }
 
   function applyPaper(pageEl, paper){
     paper = paper || 'grid';
@@ -115,13 +186,17 @@ window.JOURNAL = (function(){
       applyRot(el,d);
     } else if(d.type==='photo'){
       const img=document.createElement('img'); img.src=d.src; img.draggable=false; el.appendChild(img);
-      if(d.caption){ const cap=document.createElement('div'); cap.className='cap'; cap.textContent=d.caption; el.appendChild(cap); }
-      applyRot(el,d);
+      const cap=document.createElement('div'); cap.className='cap'; cap.textContent=d.caption||''; el.appendChild(cap);
+      applyPhotoStyle(el,d); applyRot(el,d);
     } else if(d.type==='sticker'){
       const s=document.createElement('span'); s.className='s-emoji'; s.textContent=d.emoji; if(d.size) s.style.fontSize=d.size+'px'; el.appendChild(s);
       applyRot(el,d);
     } else if(d.type==='imgsticker'){
       const img=document.createElement('img'); img.src=d.src; img.draggable=false; el.appendChild(img); applyRot(el,d);
+    } else if(d.type==='doodle'){
+      const dd=DOODLES_MAP[d.key];
+      if(dd){ el.innerHTML=doodleSVG(d.key, d.color, d.weight); if(dd.ratio) el.style.aspectRatio=String(dd.ratio); }
+      applyRot(el,d);
     } else if(d.type==='washi'){
       const t=document.createElement('div'); t.className='tape'; t.style.background=d.color||'#b9a7e3'; if(d.w) t.style.width=d.w+'px';
       el.style.transform='rotate('+(d.rot||-3)+'deg)'; el.appendChild(t);
@@ -148,7 +223,7 @@ window.JOURNAL = (function(){
   function b64decode(b64){ const bin=atob((b64||'').replace(/\n/g,'')); const bytes=new Uint8Array(bin.length);
     for(let i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i); return new TextDecoder().decode(bytes); }
 
-  return { CONFIG, PAGE_W, FONTS, BACKGROUNDS, BG_MAP, BUILTIN_PAPERS, applyPaper, normalizePaper,
+  return { CONFIG, PAGE_W, FONTS, BACKGROUNDS, BG_MAP, BUILTIN_PAPERS, DOODLES, DOODLES_MAP, doodleSVG, applyPhotoStyle, applyPaper, normalizePaper,
            uid, today, escapeHtml, slugify, formatDate, compress, applyTextStyle, applyRot,
            buildElementRO, renderPageRO, b64encode, b64decode };
 })();

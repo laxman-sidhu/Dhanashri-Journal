@@ -6,7 +6,7 @@
 <title>Editor — Dhanashri's Journal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Dancing+Script:wght@400;600;700&family=Gaegu:wght@400;700&family=Indie+Flower&family=Nunito:wght@400;600;700&family=Patrick+Hand&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Amatic+SC:wght@400;700&family=Caveat:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Dancing+Script:wght@400;600;700&family=Gaegu:wght@400;700&family=Great+Vibes&family=Indie+Flower&family=Kalam:wght@300;400;700&family=Nunito:wght@400;600;700&family=Patrick+Hand&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Quicksand:wght@400;600;700&family=Sacramento&family=Satisfy&family=Shadows+Into+Light&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/style.css">
 <style>
   body{overflow:hidden; height:100vh;}
@@ -39,6 +39,16 @@
   .fmtbar .szval{min-width:28px;text-align:center;font-weight:700;font-size:13px;}
   .fmtbar .sw{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid #fff;box-shadow:0 0 0 1px var(--paper-edge);}
   .fmtbar input[type=color]{width:32px;height:32px;border:none;background:none;cursor:pointer;padding:0;border-radius:8px;}
+  /* photo bar: text-label buttons need room, spacing and a clear active state */
+  #photobar{gap:8px; flex-wrap:wrap; row-gap:8px; padding:9px 14px;}
+  #photobar .fb{width:auto; height:32px; padding:0 15px; font-size:13px; font-weight:600; border-radius:999px; white-space:nowrap; transition:.15s;}
+  #photobar .fb:hover{background:var(--soft); border-color:var(--lav);}
+  #photobar .fb.on{background:var(--lav-deep); color:#fff; border-color:var(--lav-deep); box-shadow:0 3px 8px var(--shadow);}
+  #photobar .sw{width:26px; height:26px; transition:.12s;}
+  #photobar .sw:hover{transform:scale(1.12);}
+  #photobar input[type=color]{width:30px;height:30px;}
+  #photobar .sep{margin:0 5px;}
+  #photobar .fbl{margin:0 1px;}
 
   .stage{flex:1; overflow:auto; -webkit-overflow-scrolling:touch; touch-action:pan-y; display:flex; align-items:flex-start; justify-content:center; padding:6px 14px 120px;}
   .stage-inner{margin:0 auto; position:relative; overflow:hidden;}
@@ -68,6 +78,8 @@
   .tool{border:none; background:transparent; cursor:pointer; font-family:var(--body); font-weight:700; font-size:13px; color:var(--ink);
     padding:9px 14px; border-radius:999px; display:flex; align-items:center; gap:6px;}
   .tool:hover{background:var(--soft);}
+  .tool:disabled{opacity:.34; cursor:default; background:transparent;}
+  .toolsep{width:1px; align-self:stretch; background:var(--paper-edge); margin:3px 4px;}
   .tool .ic{font-size:17px;}
 
   .mask{position:fixed; inset:0; background:rgba(75,67,97,.34); z-index:300; display:none; align-items:center; justify-content:center; padding:18px;}
@@ -121,6 +133,25 @@
   #cropBox{position:absolute; border:2px solid #fff; box-shadow:0 0 0 9999px rgba(75,67,97,.5); cursor:move; touch-action:none;}
   #cropHandle{position:absolute; right:-10px; bottom:-10px; width:22px;height:22px;border-radius:50%;background:var(--lav-deep);border:2px solid #fff; cursor:nwse-resize; touch-action:none;}
 
+  /* smooth rotate handle + degree bubble */
+  .roth{position:absolute; left:50%; bottom:-34px; transform:translateX(-50%); width:26px;height:26px;border-radius:50%;
+    background:var(--lav-deep); color:#fff; display:none; align-items:center;justify-content:center; cursor:grab; font-size:14px;
+    box-shadow:0 2px 6px var(--shadow); z-index:60; touch-action:none;}
+  .roth:before{content:""; position:absolute; top:-12px; left:50%; transform:translateX(-50%); width:2px;height:12px; background:var(--lav-deep); opacity:.55;}
+  .el.selected .roth{display:flex;}
+  .rotbubble{position:fixed; display:none; transform:translateX(-50%); background:var(--ink); color:#fff; font-size:12px; font-weight:700;
+    padding:3px 8px; border-radius:999px; z-index:400; pointer-events:none; box-shadow:0 4px 12px var(--shadow);}
+  /* doodle / arrow / line picker */
+  .doodlecolors{display:flex; gap:8px; flex-wrap:wrap; margin:2px 0 10px;}
+  .dcolor{width:24px;height:24px;border-radius:50%;cursor:pointer;border:2px solid #fff; box-shadow:0 0 0 1px var(--paper-edge); padding:0;}
+  .dcolor.sel{outline:2px solid var(--lav-deep); outline-offset:2px;}
+  .doodlegrid{display:grid; grid-template-columns:repeat(4,1fr); gap:10px;}
+  .doodlebtn{border:1px solid var(--paper-edge); background:#fff; border-radius:12px; padding:12px 10px; cursor:pointer; display:flex; align-items:center; justify-content:center; min-height:62px;}
+  .doodlebtn:hover{background:var(--blush); transform:translateY(-2px);}
+  .doodlebtn .dprev{display:flex; align-items:center; justify-content:center; width:100%;}
+  .doodlebtn .dprev svg{width:100%; max-height:42px; height:auto;}
+  @media(max-width:600px){ .doodlegrid{grid-template-columns:repeat(3,1fr);} }
+
   .toast{position:fixed; left:50%; top:14px; transform:translateX(-50%); background:var(--ink); color:#fff; padding:10px 18px; border-radius:999px;
     font-size:13px; font-weight:600; z-index:400; box-shadow:0 8px 24px var(--shadow); opacity:0; transition:.25s; pointer-events:none; max-width:90vw; text-align:center;}
   .toast.show{opacity:1;}
@@ -153,7 +184,7 @@
   </div>
 
   <div class="tabs" id="tabs"></div>
-  <div class="hint">Tap an element to move (purple dot), resize (corner), rotate (↺ ↻) or delete (×). Photos also have a crop (✂) button.</div>
+  <div class="hint">Tap an item to move (✥), resize (corner), tilt (⟳ drag, hold Shift to snap) or delete (×). Photos also crop (✂). Add stars, arrows and lines from the Doodles menu, then recolour and set their weight.</div>
 
   <div class="fmtbar" id="fmtbar">
     <select id="fFont" title="Font"></select>
@@ -189,6 +220,39 @@
     <input type="color" id="fFillColor" value="#fff3c4" title="Custom fill colour">
   </div>
 
+  <div class="fmtbar" id="doodlebar">
+    <span class="fbl">Colour</span>
+    <span class="sw" data-dc="#4b4361" style="background:#4b4361"></span>
+    <span class="sw" data-dc="#8367c7" style="background:#8367c7"></span>
+    <span class="sw" data-dc="#c77fb3" style="background:#c77fb3"></span>
+    <span class="sw" data-dc="#6c91c2" style="background:#6c91c2"></span>
+    <span class="sw" data-dc="#5a9e86" style="background:#5a9e86"></span>
+    <span class="sw" data-dc="#d59a55" style="background:#d59a55"></span>
+    <input type="color" id="dColor" value="#4b4361" title="Custom doodle colour">
+    <div class="sep"></div>
+    <span class="fbl">Weight</span>
+    <button class="fb" id="dwMinus" title="Thinner">−</button><span class="szval" id="dwVal">6</span><button class="fb" id="dwPlus" title="Thicker">+</button>
+  </div>
+
+  <div class="fmtbar" id="photobar">
+    <span class="fbl">Photo</span>
+    <button class="fb" data-pstyle="card" title="Photo card with caption">Card</button>
+    <button class="fb" data-pstyle="plain" title="Plain image">Plain</button>
+    <button class="fb" data-pstyle="shadow" title="Plain with soft shadow">Shadow</button>
+    <button class="fb" data-pstyle="frame" title="Coloured frame">Frame</button>
+    <button class="fb" data-pstyle="border" title="Thin border">Border</button>
+    <div class="sep"></div>
+    <span class="fbl">Frame</span>
+    <span class="sw" data-pc="#efe9fb" style="background:#efe9fb"></span>
+    <span class="sw" data-pc="#f1e2f0" style="background:#f1e2f0"></span>
+    <span class="sw" data-pc="#cfe7dc" style="background:#cfe7dc"></span>
+    <span class="sw" data-pc="#fbf6e6" style="background:#fbf6e6"></span>
+    <span class="sw" data-pc="#ffffff" style="background:#ffffff"></span>
+    <input type="color" id="pColor" value="#efe9fb" title="Custom frame colour">
+    <div class="sep"></div>
+    <button class="fb" id="pCap" title="Show / hide caption">Caption</button>
+  </div>
+
   <div class="stage" id="stage">
     <div class="stage-inner">
       <div class="page-scaler" id="scaler"><div class="page grid" id="page"></div></div>
@@ -198,7 +262,10 @@
   <div class="toolbar">
     <button class="tool" id="addText"><span class="ic">✎</span><span class="lbl">Text</span></button>
     <button class="tool" id="addPhoto"><span class="ic">🖼</span><span class="lbl">Photo</span></button>
-    <button class="tool" id="addSticker"><span class="ic">✦</span><span class="lbl">Sticker</span></button>
+    <button class="tool" id="addSticker"><span class="ic">✦</span><span class="lbl">Doodles</span></button>
+    <div class="toolsep"></div>
+    <button class="tool" id="undoBtn" title="Undo (Ctrl+Z)" disabled><span class="ic">↶</span><span class="lbl">Undo</span></button>
+    <button class="tool" id="redoBtn" title="Redo (Ctrl+Y)" disabled><span class="ic">↷</span><span class="lbl">Redo</span></button>
     <input type="file" id="photoFile" accept="image/*" hidden>
   </div>
 </div>
@@ -239,6 +306,7 @@
 
 <div class="sheet-mask" id="sheetMask"><div class="sheet" id="sheet"></div></div>
 <div class="toast" id="toast"></div>
+<div class="rotbubble" id="rotBubble"></div>
 
 <script src="assets/core.js"></script>
 <script>
@@ -248,14 +316,9 @@ const J=window.JOURNAL, U=J.CONFIG.USERNAME, R=J.CONFIG.REPO, PAGE_W=J.PAGE_W;
 const API='https://api.github.com/repos/'+U+'/'+R+'/contents/';
 const DRAFT='dj-draft', TOKEN='dj-gh-token';
 
-const STICKERS={
-  "Travel & places":["✈️","🗺️","🏝️","🌊","⛩️","🗼","🏖️","🧳","📍","🚆","🛵","🛶","🌅","🏔️","🏜️","⛱️"],
-  "Food & drinks":["☕","🧋","🍜","🍕","🍰","🍓","🥐","🍦","🍵","🥗","🍱","🍣","🧁","🍩","🥥","🍷"],
-  "Nature & weather":["🌷","🌿","🍂","🌙","⭐","🌸","☀️","🌧️","❄️","🌈","🍃","🐚","🌻","🌊","🌼","🪴"],
-  "Cute & feelings":["🐰","🐻","🐱","💌","📸","🎀","✨","💕","🫶","😊","🥰","💭","🦋","🍭","🧸","💗"],
-  "Hearts & sparkle":["💜","💗","💖","💝","🤍","💟","🌟","⚡","🔮","🫧","🪄","🎐","🕊️","🍇","🪻","🌌"]
-};
 const WASHI=["#b9a7e3","#c6cdf2","#d8ccf2","#f1c7e3","#cfe7dc","#e8c7e2","#c2dce8","#e6d3a0"];
+const DOODLE_COLORS=["#4b4361","#8367c7","#c77fb3","#6c91c2","#5a9e86","#9b86d0","#d59a55","#9c93b3"];
+let doodleColor=DOODLE_COLORS[0];
 
 function blankPage(){ return {paper:'grid', elements:[]}; }
 function newStory(){ return {id:null, origId:null, title:'', date:J.today(), thumb:'', pages:[blankPage()], current:0}; }
@@ -271,9 +334,35 @@ const stageInner=document.querySelector('.stage-inner');
 const tabsEl=document.getElementById('tabs'), storyTitle=document.getElementById('storyTitle');
 const storyDate=document.getElementById('storyDate'), coverPrev=document.getElementById('coverPrev');
 const toast=document.getElementById('toast'), fmtbar=document.getElementById('fmtbar');
+const doodlebar=document.getElementById('doodlebar');
+const photobar=document.getElementById('photobar');
 
 function loadDraft(){ try{ const r=localStorage.getItem(DRAFT); if(r) return JSON.parse(r);}catch(e){} return null; }
-function saveDraft(){ try{ localStorage.setItem(DRAFT, JSON.stringify(story)); }catch(e){} }
+function saveDraft(){ try{ localStorage.setItem(DRAFT, JSON.stringify(story)); }catch(e){} markDirty(); }
+
+/* ---------- undo / redo (lightweight: structure-only snapshots, image strings shared by reference) ---------- */
+let history=[], histIndex=-1, restoring=false, dirtyTimer=null;
+function lightClone(v){ if(Array.isArray(v)) return v.map(lightClone); if(v && typeof v==='object'){ const o={}; for(const k in v) o[k]=lightClone(v[k]); return o; } return v; }
+function histSig(s){ try{ return JSON.stringify(s,(k,v)=> k==='current'?undefined:(typeof v==='string'&&v.length>64?('§'+v.length):v)); }catch(e){ return ''+Math.random(); } }
+function histReset(){ clearTimeout(dirtyTimer); dirtyTimer=null; history=[{snap:lightClone(story), sig:histSig(story)}]; histIndex=0; updateUndoUI(); }
+function histPush(){ clearTimeout(dirtyTimer); dirtyTimer=null; if(restoring) return; const sig=histSig(story);
+  if(histIndex>=0 && history[histIndex] && history[histIndex].sig===sig) return;
+  if(histIndex<history.length-1) history=history.slice(0,histIndex+1);
+  history.push({snap:lightClone(story), sig});
+  if(history.length>40) history.shift();
+  histIndex=history.length-1; updateUndoUI(); }
+function markDirty(){ if(restoring) return; clearTimeout(dirtyTimer); dirtyTimer=setTimeout(histPush,250); }
+function flushDirty(){ if(dirtyTimer) histPush(); }
+function histRestore(entry){ restoring=true; clearTimeout(dirtyTimer); dirtyTimer=null; story=lightClone(entry.snap); deselect(); renderAll(); restoring=false; updateUndoUI(); }
+function undo(){ flushDirty(); if(histIndex>0){ histIndex--; histRestore(history[histIndex]); } }
+function redo(){ if(histIndex<history.length-1){ histIndex++; histRestore(history[histIndex]); } }
+function updateUndoUI(){ const u=document.getElementById('undoBtn'), r=document.getElementById('redoBtn'); if(u) u.disabled=histIndex<=0; if(r) r.disabled=histIndex>=history.length-1; }
+function inEditable(){ const a=document.activeElement; return a && (a.isContentEditable || a.tagName==='INPUT' || a.tagName==='TEXTAREA'); }
+window.addEventListener('keydown',(e)=>{ const mod=e.ctrlKey||e.metaKey; if(!mod) return; const k=(e.key||'').toLowerCase();
+  if(k==='z' && !e.shiftKey){ if(inEditable()) return; e.preventDefault(); undo(); }
+  else if(k==='y' || (k==='z' && e.shiftKey)){ if(inEditable()) return; e.preventDefault(); redo(); } });
+document.getElementById('undoBtn').onclick=()=>undo();
+document.getElementById('redoBtn').onclick=()=>redo();
 function getToken(){ try{ return localStorage.getItem(TOKEN)||''; }catch(e){ return ''; } }
 function showToast(msg, ms){ toast.textContent=msg; toast.classList.add('show'); clearTimeout(toast._t); if(ms!==0) toast._t=setTimeout(()=>toast.classList.remove('show'), ms||2600); }
 function curPage(){ return story.pages[story.current]; }
@@ -311,6 +400,35 @@ document.querySelectorAll('.fmtbar .sw[data-fill]').forEach(sw=>{ sw.onclick=()=
 document.getElementById('fFillColor').oninput=function(){ if(!selData) return; selData.fill=this.value; applyToSel(); };
 document.getElementById('fFillClear').onclick=()=>{ if(!selData) return; selData.fill=''; applyToSel(); };
 
+/* ---------- doodle bar (colour + weight, after placing) ---------- */
+function showDoodleBar(){ doodlebar.style.display='flex';
+  document.getElementById('dwVal').textContent=(selData.weight==null?6:selData.weight);
+  document.getElementById('dColor').value=toHex(selData.color||'#4b4361'); fitScale(); }
+function hideDoodleBar(){ doodlebar.style.display='none'; fitScale(); }
+function applyDoodle(){ if(!selNode||!selData||selData.type!=='doodle') return; updateDoodle(selNode, selData); saveDraft(); }
+function setWeight(n){ if(!selData||selData.type!=='doodle') return; selData.weight=Math.max(1,Math.min(16,n)); document.getElementById('dwVal').textContent=selData.weight; applyDoodle(); }
+document.getElementById('dwMinus').onclick=()=>setWeight((selData&&selData.weight!=null?selData.weight:6)-1);
+document.getElementById('dwPlus').onclick=()=>setWeight((selData&&selData.weight!=null?selData.weight:6)+1);
+document.querySelectorAll('#doodlebar .sw[data-dc]').forEach(sw=>{ sw.onclick=()=>{ if(!selData) return; selData.color=sw.dataset.dc; document.getElementById('dColor').value=toHex(sw.dataset.dc); applyDoodle(); }; });
+document.getElementById('dColor').oninput=function(){ if(!selData) return; selData.color=this.value; applyDoodle(); };
+
+/* ---------- photo bar (look: card / plain / shadow / frame / border) ---------- */
+function showPhotoBar(){ photobar.style.display='flex';
+  const st=selData.style||'card';
+  photobar.querySelectorAll('[data-pstyle]').forEach(b=>b.classList.toggle('on', b.dataset.pstyle===st));
+  document.getElementById('pColor').value=toHex(selData.frameColor||'#efe9fb');
+  document.getElementById('pCap').classList.toggle('on', !selData.noCap);
+  fitScale(); }
+function hidePhotoBar(){ photobar.style.display='none'; fitScale(); }
+function applyPhoto(){ if(!selNode||!selData||selData.type!=='photo') return; J.applyPhotoStyle(selNode, selData); saveDraft(); }
+photobar.querySelectorAll('[data-pstyle]').forEach(b=>{ b.onclick=()=>{ if(!selData) return; selData.style=b.dataset.pstyle;
+  photobar.querySelectorAll('[data-pstyle]').forEach(x=>x.classList.toggle('on', x===b)); applyPhoto(); }; });
+photobar.querySelectorAll('.sw[data-pc]').forEach(sw=>{ sw.onclick=()=>{ if(!selData) return; selData.frameColor=sw.dataset.pc; selData.style='frame';
+  document.getElementById('pColor').value=toHex(sw.dataset.pc); photobar.querySelectorAll('[data-pstyle]').forEach(x=>x.classList.toggle('on', x.dataset.pstyle==='frame')); applyPhoto(); }; });
+document.getElementById('pColor').oninput=function(){ if(!selData) return; selData.frameColor=this.value; selData.style='frame';
+  photobar.querySelectorAll('[data-pstyle]').forEach(x=>x.classList.toggle('on', x.dataset.pstyle==='frame')); applyPhoto(); };
+document.getElementById('pCap').onclick=function(){ if(!selData) return; selData.noCap=!selData.noCap; this.classList.toggle('on', !selData.noCap); applyPhoto(); };
+
 /* ---------- render ---------- */
 function renderTabs(){
   tabsEl.innerHTML='';
@@ -332,9 +450,11 @@ function renderAll(){
   page.onpointerdown=(e)=>{ if(e.target===page) deselect(); };
   requestAnimationFrame(fitScale); saveDraft();
 }
-function deselect(){ if(selNode) selNode.classList.remove('selected'); selNode=null; selData=null; hideFmt(); }
+function deselect(){ if(selNode) selNode.classList.remove('selected'); selNode=null; selData=null; hideFmt(); hideDoodleBar(); hidePhotoBar(); }
 function select(node){ if(selNode && selNode!==node) selNode.classList.remove('selected'); selNode=node; selData=node.__data; node.classList.add('selected'); zTop++; node.style.zIndex=zTop;
-  if(selData && selData.type==='text') showFmt(); else hideFmt(); }
+  if(selData && selData.type==='text') showFmt(); else hideFmt();
+  if(selData && selData.type==='doodle') showDoodleBar(); else hideDoodleBar();
+  if(selData && selData.type==='photo') showPhotoBar(); else hidePhotoBar(); }
 function applyRot(el,d){ el.style.transform='rotate('+(d.rot||0)+'deg)'; }
 
 function buildEl(d, pg){
@@ -349,11 +469,15 @@ function buildEl(d, pg){
     const cap=document.createElement('div'); cap.className='cap'; cap.contentEditable='true'; cap.innerText=d.caption||'';
     cap.addEventListener('input',()=>{ d.caption=cap.innerText; saveDraft(); });
     cap.addEventListener('pointerdown',e=>{ select(el); e.stopPropagation(); });
-    el.appendChild(cap); applyRot(el,d);
+    el.appendChild(cap); J.applyPhotoStyle(el,d); applyRot(el,d);
   } else if(d.type==='sticker'){
     const s=document.createElement('span'); s.className='s-emoji'; s.textContent=d.emoji; if(d.size) s.style.fontSize=d.size+'px'; el.appendChild(s); applyRot(el,d);
   } else if(d.type==='imgsticker'){
     const img=document.createElement('img'); img.src=d.src; img.draggable=false; el.appendChild(img); applyRot(el,d);
+  } else if(d.type==='doodle'){
+    const dd=J.DOODLES_MAP[d.key];
+    if(dd){ el.innerHTML=J.doodleSVG(d.key, d.color, d.weight); if(dd.ratio) el.style.aspectRatio=String(dd.ratio); }
+    applyRot(el,d);
   } else if(d.type==='washi'){
     const t=document.createElement('div'); t.className='tape'; t.style.background=d.color||'#b9a7e3'; if(d.w) t.style.width=d.w+'px'; el.appendChild(t); applyRot(el,d);
   }
@@ -361,21 +485,35 @@ function buildEl(d, pg){
   const ctrl=document.createElement('div'); ctrl.className='ctrl';
   if(d.type==='photo'){ const crop=document.createElement('div'); crop.className='dot'; crop.textContent='✂'; crop.title='crop';
     crop.onpointerdown=(e)=>{ e.stopPropagation(); openCrop(d); }; ctrl.appendChild(crop); }
-  {
-    const rl=document.createElement('div'); rl.className='dot'; rl.textContent='↺'; rl.title='rotate left';
-    rl.onpointerdown=(e)=>{ e.stopPropagation(); d.rot=((d.rot||0)-5); applyRot(el,d); saveDraft(); }; ctrl.appendChild(rl);
-    const rr=document.createElement('div'); rr.className='dot'; rr.textContent='↻'; rr.title='rotate right';
-    rr.onpointerdown=(e)=>{ e.stopPropagation(); d.rot=((d.rot||0)+5); applyRot(el,d); saveDraft(); }; ctrl.appendChild(rr);
-  }
   const del=document.createElement('div'); del.className='dot del'; del.textContent='×';
   del.onpointerdown=(e)=>{ e.stopPropagation(); pg.elements=pg.elements.filter(x=>x!==d); deselect(); renderAll(); }; ctrl.appendChild(del);
   el.appendChild(ctrl);
   const rz=document.createElement('div'); rz.className='resize'; rz.textContent='⤡'; el.appendChild(rz); makeResizable(el,rz,d);
-  el.addEventListener('pointerdown',(e)=>{ if(e.target===grip||e.target.classList.contains('resize')||e.target.classList.contains('dot')) return; if(d.type!=='text') select(el); });
+  const roth=document.createElement('div'); roth.className='roth'; roth.textContent='⟳'; roth.title='drag to tilt (hold Shift to snap to 15°)'; el.appendChild(roth); makeRotatable(el,roth,d);
+  el.addEventListener('pointerdown',(e)=>{ if(e.target===grip||e.target.classList.contains('resize')||e.target.classList.contains('roth')||e.target.classList.contains('dot')) return; if(d.type!=='text') select(el); });
   makeDraggable(el, grip, d);
-  if(d.type==='sticker'||d.type==='washi'||d.type==='imgsticker') makeDraggable(el, el, d, grip);
+  if(d.type==='sticker'||d.type==='washi'||d.type==='imgsticker'||d.type==='doodle') makeDraggable(el, el, d, grip);
   if(d.type==='photo') makeDraggable(el, el.querySelector('img'), d);
   return el;
+}
+function nodeFor(d){ return [...page.querySelectorAll('.el')].find(n=>n.__data===d); }
+function reselect(d){ const n=nodeFor(d); if(n) select(n); }
+function updateDoodle(el,d){ const html=J.doodleSVG(d.key, d.color, d.weight);
+  const tmp=document.createElement('div'); tmp.innerHTML=html; const ns=tmp.firstChild; if(!ns) return;
+  const old=el.querySelector('svg'); if(old) el.replaceChild(ns, old); else el.insertBefore(ns, el.firstChild); }
+function makeRotatable(el, handle, d){
+  let cx,cy,startA,startRot,drag=false; const bubble=document.getElementById('rotBubble');
+  handle.addEventListener('pointerdown',(e)=>{ drag=true; select(el); handle.setPointerCapture(e.pointerId);
+    const r=el.getBoundingClientRect(); cx=r.left+r.width/2; cy=r.top+r.height/2;
+    startA=Math.atan2(e.clientY-cy,e.clientX-cx)*180/Math.PI; startRot=d.rot||0;
+    bubble.style.display='block'; e.preventDefault(); e.stopPropagation(); });
+  handle.addEventListener('pointermove',(e)=>{ if(!drag) return;
+    const a=Math.atan2(e.clientY-cy,e.clientX-cx)*180/Math.PI; let nr=startRot+(a-startA);
+    if(e.shiftKey) nr=Math.round(nr/15)*15; nr=Math.round(nr*10)/10; d.rot=nr; applyRot(el,d);
+    let disp=((Math.round(nr)+180)%360+360)%360-180; bubble.textContent=disp+'°';
+    bubble.style.left=e.clientX+'px'; bubble.style.top=(e.clientY-36)+'px'; });
+  const end=()=>{ if(!drag) return; drag=false; bubble.style.display='none'; saveDraft(); };
+  handle.addEventListener('pointerup',end); handle.addEventListener('pointercancel',end);
 }
 function makeDraggable(el, handle, d, exclude){
   let sx,sy,ox,oy,drag=false;
@@ -405,7 +543,7 @@ document.getElementById('addText').onclick=()=>{ curPage().elements.push({id:J.u
 const photoFile=document.getElementById('photoFile');
 document.getElementById('addPhoto').onclick=()=>photoFile.click();
 photoFile.onchange=async(e)=>{ const f=e.target.files[0]; if(!f) return; try{ const src=await J.compress(f);
-  curPage().elements.push({id:J.uid(),type:'photo',x:200,y:330,w:220,src,caption:'',rot:(Math.random()*5-2.5)}); renderAll(); }catch(err){ showToast('Could not load image'); } photoFile.value=''; };
+  curPage().elements.push({id:J.uid(),type:'photo',x:200,y:330,w:220,src,caption:'',rot:0}); renderAll(); }catch(err){ showToast('Could not load image'); } photoFile.value=''; };
 const coverFile=document.getElementById('coverFile');
 document.getElementById('coverBtn').onclick=()=>coverFile.click();
 coverFile.onchange=async(e)=>{ const f=e.target.files[0]; if(!f) return; try{ story.thumb=await J.compress(f,520,0.72); renderAll(); showToast('Cover set'); }catch(err){ showToast('Could not load image'); } coverFile.value=''; };
@@ -474,29 +612,37 @@ document.getElementById('addSticker').onclick=openSheet;
 sheetMask.onclick=(e)=>{ if(e.target===sheetMask) sheetMask.classList.remove('open'); };
 function addSticker(obj){ curPage().elements.push(Object.assign({id:J.uid(),x:300,y:300},obj)); sheetMask.classList.remove('open'); renderAll(); }
 function openSheet(){
-  sheet.innerHTML='<h3>Add a sticker</h3>';
-  let c=document.createElement('div'); c.className='cat'; c.textContent='Your own'; sheet.appendChild(c);
-  const cr=document.createElement('div'); cr.className='customrow';
-  const inp=document.createElement('input'); inp.type='text'; inp.placeholder='Paste any emoji or symbol 🌟'; inp.maxLength=8;
-  const addE=document.createElement('button'); addE.className='btn primary'; addE.textContent='Add';
-  addE.onclick=()=>{ const v=inp.value.trim(); if(v) addSticker({type:'sticker',emoji:v,size:54,rot:0}); };
-  const addImg=document.createElement('button'); addImg.className='btn ghost'; addImg.textContent='🖼 Image sticker';
-  const imgIn=document.createElement('input'); imgIn.type='file'; imgIn.accept='image/*'; imgIn.style.display='none';
-  addImg.onclick=()=>imgIn.click();
-  imgIn.onchange=async(e)=>{ const f=e.target.files[0]; if(!f) return; try{ const src=await J.compress(f,440,1,'image/png'); addSticker({type:'imgsticker',w:120,src,rot:0}); }catch(err){ showToast('Could not load image'); } };
-  cr.appendChild(inp); cr.appendChild(addE); cr.appendChild(addImg); cr.appendChild(imgIn); sheet.appendChild(cr);
+  sheet.innerHTML='<h3>Doodles, arrows &amp; lines</h3>';
+  let c=document.createElement('div'); c.className='cat'; c.textContent='Colour (you can also change it after adding)'; sheet.appendChild(c);
+  const colorRow=document.createElement('div'); colorRow.className='doodlecolors';
+  const swatches=[];
+  DOODLE_COLORS.forEach(col=>{ const s=document.createElement('button'); s.className='dcolor'+(col===doodleColor?' sel':''); s.style.background=col;
+    s.title='doodle colour'; s.onclick=()=>{ doodleColor=col; swatches.forEach(x=>x.classList.remove('sel')); s.classList.add('sel');
+      dg.querySelectorAll('.dprev').forEach((p,i)=>{ p.innerHTML=J.doodleSVG(J.DOODLES[i].key, doodleColor, 6); }); }; swatches.push(s); colorRow.appendChild(s); });
+  sheet.appendChild(colorRow);
+  const dg=document.createElement('div'); dg.className='doodlegrid';
+  J.DOODLES.forEach(dd=>{ const b=document.createElement('button'); b.className='doodlebtn'; b.title=dd.label;
+    b.innerHTML='<span class="dprev">'+J.doodleSVG(dd.key, doodleColor, 6)+'</span>';
+    b.onclick=()=>addSticker({type:'doodle',key:dd.key,w:dd.w||120,color:doodleColor,weight:6,rot:0}); dg.appendChild(b); });
+  sheet.appendChild(dg);
+
   c=document.createElement('div'); c.className='cat'; c.textContent='Washi tape'; sheet.appendChild(c);
   const wrow=document.createElement('div'); wrow.className='washirow';
   WASHI.forEach(col=>{ const b=document.createElement('button'); b.style.background=col; b.onclick=()=>addSticker({type:'washi',w:120,color:col,rot:(Math.random()*8-4)}); wrow.appendChild(b); });
   sheet.appendChild(wrow);
-  Object.keys(STICKERS).forEach(name=>{ const cc=document.createElement('div'); cc.className='cat'; cc.textContent=name; sheet.appendChild(cc);
-    const g=document.createElement('div'); g.className='stickgrid';
-    STICKERS[name].forEach(em=>{ const b=document.createElement('button'); b.textContent=em; b.onclick=()=>addSticker({type:'sticker',emoji:em,size:54,rot:0}); g.appendChild(b); }); sheet.appendChild(g); });
+
+  c=document.createElement('div'); c.className='cat'; c.textContent='Your own image'; sheet.appendChild(c);
+  const cr=document.createElement('div'); cr.className='customrow';
+  const addImg=document.createElement('button'); addImg.className='btn ghost'; addImg.textContent='🖼 Upload an image sticker';
+  const imgIn=document.createElement('input'); imgIn.type='file'; imgIn.accept='image/*'; imgIn.style.display='none';
+  addImg.onclick=()=>imgIn.click();
+  imgIn.onchange=async(e)=>{ const f=e.target.files[0]; if(!f) return; try{ const src=await J.compress(f,440,1,'image/png'); addSticker({type:'imgsticker',w:120,src,rot:0}); }catch(err){ showToast('Could not load image'); } };
+  cr.appendChild(addImg); cr.appendChild(imgIn); sheet.appendChild(cr);
   sheetMask.classList.add('open');
 }
 
 /* ---------- new / settings ---------- */
-document.getElementById('newBtn').onclick=()=>{ if(confirm('Start a new blank story? Unpublished changes here will be cleared.')){ story=newStory(); deselect(); renderAll(); } };
+document.getElementById('newBtn').onclick=()=>{ if(confirm('Start a new blank story? Unpublished changes here will be cleared.')){ story=newStory(); deselect(); renderAll(); histReset(); } };
 
 /* ---------- save draft (download JSON; re-open later with Import JSON) ---------- */
 document.getElementById('saveDraftBtn').onclick=()=>{
@@ -514,7 +660,7 @@ document.getElementById('saveDraftBtn').onclick=()=>{
 };
 
 /* ---------- import JSON ---------- */
-const ELEMENT_TYPES=['text','photo','sticker','imgsticker','washi'];
+const ELEMENT_TYPES=['text','photo','sticker','imgsticker','washi','doodle'];
 function validateStoryJson(data){
   if(!data || typeof data!=='object' || Array.isArray(data)) return 'The file is not a story object.';
   if(data.title!=null && typeof data.title!=='string') return 'The story title is invalid.';
@@ -566,7 +712,7 @@ importFile.onchange=(e)=>{
             date:(typeof data.date==='string'&&data.date)?data.date:J.today(),
             thumb:(typeof data.thumb==='string')?data.thumb:'',
             pages:pages, current:0 };
-    deselect(); saveDraft(); renderAll();
+    deselect(); saveDraft(); renderAll(); histReset();
     showToast('Story imported. Edit and Publish to add it to the site.');
   };
   reader.readAsText(f);
@@ -600,7 +746,7 @@ async function loadStories(){
       main.innerHTML=(p.thumb?'<img src="'+p.thumb+'">':'<div class="ph">✿</div>')+'<div style="min-width:0"><div class="tname">'+J.escapeHtml(p.title||'Untitled')+'</div><div style="font-size:11px;color:var(--lav-deep);font-weight:700;">'+J.escapeHtml(J.formatDate(p.date))+'</div></div>';
       main.onclick=async()=>{ try{ showToast('Loading story...',0); const pr=await ghGet('data/posts/'+p.id+'.json'); const post=JSON.parse(pr.text);
         story={id:post.id, origId:post.id, title:post.title||'', date:post.date||J.today(), thumb:(typeof post.thumb==='string'&&post.thumb)?post.thumb:(p.thumb||''), pages:(post.pages&&post.pages.length)?post.pages:[blankPage()], current:0, _loaded:true};
-        deselect(); openMask.classList.remove('open'); renderAll(); showToast('Loaded — edit and Publish to update'); }catch(err){ showToast('Could not open story'); } };
+        deselect(); openMask.classList.remove('open'); renderAll(); histReset(); showToast('Loaded — edit and Publish to update'); }catch(err){ showToast('Could not open story'); } };
       const dl=document.createElement('button'); dl.className='dl'; dl.textContent='⇩'; dl.title='Download JSON backup';
       dl.onclick=async()=>{ try{ showToast('Preparing download...',0);
           const pr=await ghGet('data/posts/'+p.id+'.json'); if(!pr){ showToast('Story file not found'); return; }
@@ -662,7 +808,7 @@ document.getElementById('publishBtn').onclick=async()=>{
   }catch(e){ showToast(e.message, 6000); }
 };
 
-renderAll(); fitScale();
+renderAll(); fitScale(); histReset();
 if(!getToken()) setTimeout(()=>showToast('Tip: set your publishing key (⚙) before publishing', 4000), 800);
 })();
 </script>
